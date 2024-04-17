@@ -1,7 +1,7 @@
 import streamlit as st
 
 # Define the list of predefined categories
-categories = ["Machine Learning", "Renewable Energy", "Medieval History"]
+categories = ["Finance", "Renewable Energy", "Medieval History"]
 
 # Define an internal list of professors
 professors = [
