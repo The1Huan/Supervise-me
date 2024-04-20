@@ -32,46 +32,95 @@ def CategorizeThesis(data):
 ===========================
 import openai
 
-# Function to initialize OpenAI API
-def setup_openai_api():
-    openai.api_key = 'your-api-key'
+# Initialize OpenAI API key
+openai.api_key = 'your-api-key'
 
-# Function to analyze text and categorize it
-def CategorizeThesis(student_input, predefined_categories):
-    setup_openai_api()
-    thesis_abstract = student_input['thesis_abstract']
+# List of predefined categories
+predefined_categories = ["Machine Learning", "Renewable Energy", "Medieval History"]
 
+# List of professors with their expertise
+professors = [
+    {'name': 'Dr. Alice Smith', 'expertise': ['Machine Learning'], 'papers': ['Deep Learning Optimization', 'AI Trends'], 'contact': 'alice.smith@email.com'},
+    {'name': 'Dr. Bob Johnson', 'expertise': ['Renewable Energy'], 'papers': ['Solar Energy Future', 'Wind Power Efficiency'], 'contact': 'bob.johnson@email.com'},
+    {'name': 'Dr. Carol Lee', 'expertise': ['Medieval History'], 'papers': ['Medieval Europe', 'The Crusades'], 'contact': 'carol.lee@email.com'}
+]
+
+# Create an assistant
+def create_assistant():
     try:
-        # Call the OpenAI API to analyze the abstract
-        response = openai.Completion.create(
-            engine="text-davinci-003",  # Choose an appropriate model
-            prompt=thesis_abstract,
-            max_tokens=500  # Adjust based on the expected length of the output
+        assistant = openai.Assistant.create(
+            model="gpt-4", 
+            name="Thesis Categorization Assistant",
+            description="An assistant to help categorize thesis abstracts into predefined categories"
         )
-        analyzed_text = response.choices[0].text.strip()
-
-        # Mapping the analysis to predefined categories
-        categories = map_analysis_to_categories(analyzed_text, predefined_categories)
-        return categories
+        return assistant.id
     except Exception as e:
-        print(f"An error occurred: {e}")
-        return []
+        print(f"Failed to create assistant: {e}")
+        return None
 
-# Example mapping function
+# Send messages to the assistant and get responses
+def send_message_to_assistant(assistant_id, message):
+    try:
+        response = openai.Message.create(
+            assistant_id=assistant_id,
+            messages=[
+                {"role": "user", "content": message}
+            ]
+        )
+        return response.choices[0].message['content']
+    except Exception as e:
+        print(f"Error sending message to assistant: {e}")
+        return None
+
+# Function to capture student input
+def CaptureStudentInput():
+    thesis_abstract = input("Enter your thesis abstract: ")
+    subject_area = input("Enter your desired subject area: ")
+    return {'thesis_abstract': thesis_abstract, 'subject_area': subject_area}
+
+# Function to categorize thesis using the assistant
+def CategorizeThesis(student_input, assistant_id):
+    thesis_abstract = student_input['thesis_abstract']
+    response = send_message_to_assistant(assistant_id, thesis_abstract)
+    return map_analysis_to_categories(response, predefined_categories)
+
+# Map analysis to predefined categories
 def map_analysis_to_categories(text, categories):
-    # Simple keyword-based mapping, replace with more sophisticated logic as needed
     matched_categories = []
     for category in categories:
         if category.lower() in text.lower():
             matched_categories.append(category)
     return matched_categories
 
-# Example use
-predefined_categories = ["Machine Learning", "Renewable Energy", "Medieval History"]
-student_input = {'thesis_abstract': "An exploration of machine learning techniques for optimizing solar panel energy output."}
+# Match professors based on categories
+def MatchProfessors(categories):
+    matched_professors = []
+    for category in categories:
+        for professor in professors:
+            if category in professor['expertise']:
+                matched_professors.append(professor)
+    return matched_professors
 
-categories = CategorizeThesis(student_input, predefined_categories)
-print("Identified Categories:", categories)
+# Display matched professors
+def DisplayMatches(matched_professors):
+    for professor in matched_professors:
+        print(f"Name: {professor['name']}")
+        print(f"Expertise: {professor['expertise']}")
+        print(f"Published Papers: {', '.join(professor['papers'])}")
+
+# Main program flow
+def main():
+    assistant_id = create_assistant()
+    if assistant_id is None:
+        return
+    student_input = CaptureStudentInput()
+    categories = CategorizeThesis(student_input, assistant_id)
+    matched_professors = MatchProfessors(categories)
+    DisplayMatches(matched_professors)
+
+if __name__ == "__main__":
+    main()
+
 =====================
 
 
