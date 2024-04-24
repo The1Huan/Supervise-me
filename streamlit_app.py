@@ -1,4 +1,13 @@
 import streamlit as st
+import openai
+from openai import OpenAI
+
+apiKey = st.text_input("key")
+
+client = OpenAI(api_key=apiKey)
+thread = client.beta.threads.create()
+# Set the assistant ID and initialize the OpenAI client with your API key
+assistant_id = 'asst_sCGNal6L7TWN8XJ57RuLB5b4'       
 
 # Define the list of predefined categories
 categories = ["Finance", "Renewable Energy", "Medieval History"]
@@ -46,31 +55,18 @@ professors = [
 ]
 
 # Create an assistant
-def create_assistant():
-    try:
-        assistant = openai.Assistant.create(
-            model="gpt-4", 
-            name="Thesis Categorization Assistant",
-            description="An assistant to help categorize thesis abstracts into predefined categories"
-        )
-        return assistant.id
-    except Exception as e:
-        print(f"Failed to create assistant: {e}")
-        return None
 
-# Send messages to the assistant and get responses
-def send_message_to_assistant(assistant_id, message):
-    try:
-        response = openai.Message.create(
+prompt = st.text_input("Enter your message")
+if prompt:
+    with client.beta.threads.runs.create_and_stream(
+            thread_id=thread.id,
             assistant_id=assistant_id,
-            messages=[
-                {"role": "user", "content": message}
-            ]
-        )
-        return response.choices[0].message['content']
-    except Exception as e:
-        print(f"Error sending message to assistant: {e}")
-        return None
+            model="gpt-4",
+            instructions="Extract keywords from the user's input and deduce the direction and add targeted keywords to assist the search. Only write out the keywords separated by a comma"+prompt
+        ) as stream:
+            with st.chat_message("assistant"):
+                response = st.write_stream(stream.text_deltas)
+                stream.until_done()
 
 # Function to capture student input
 def CaptureStudentInput():
