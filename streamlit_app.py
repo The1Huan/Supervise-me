@@ -113,8 +113,6 @@ def main():
 if __name__ == "__main__":
     main()
 
-=====================
-
 
 # Match professors
 def MatchProfessors(categories):
