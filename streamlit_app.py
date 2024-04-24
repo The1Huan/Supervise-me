@@ -37,10 +37,6 @@ def CategorizeThesis(data):
         return [data["subject_area"]]  # Simplified to return the selected subject area
     return []
 
-
-===========================
-import openai
-
 # Initialize OpenAI API key
 openai.api_key = 'your-api-key'
 
