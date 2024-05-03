@@ -1,6 +1,5 @@
 import OpenAI
 import streamlit as st
-from openai import OpenAI
 
 apiKey = st.text_input("key")
 client = OpenAI(api_key=apiKey)
