@@ -168,9 +168,9 @@ import re
 def plot_word_frequency(text):
     # Clean and split text into words, converting all to lowercase
     words = re.findall(r'\w+', text.lower())
-   words = ["apple", "banana", "orange", "grape", "kiwi"]
-   filtered_words = [word for word in words if len(word) > 5]  # Example filter condition: length > 5
-   print(filtered_words)
+    words = []
+    filtered_words = [word for word in words if len(word) > 5]  # Example filter condition: length > 5
+    print(filtered_words)
 
 
     
