@@ -160,43 +160,27 @@ cython_debug/
 #.idea/
 
 import streamlit as st
-import matplotlib.pyplot as plt
 import pandas as pd
-from collections import Counter
-import re
+import xlrd
 
-def plot_word_frequency(text):
-    # Clean and split text into words, converting all to lowercase
-    words = re.findall(r'\w+', text.lower())
-    words = []
-    filtered_words = [word for word in words if len(word) > 5]  # Example filter condition: length > 5
-    print(filtered_words)
+st.set_page_config(page_title = "Statistics of Teachers",
+                   page_icon = ":bar_chart:",
+                   layout = "wide"
+)
 
 
-    
-    # Count each word in the text
-    word_counts = Counter(words)
+df = pd.read_excel(r"/Users/thomassabti/Desktop/my_product.xlsx")
 
-    # Create DataFrame from the counter
-    df = pd.DataFrame(word_counts.items(), columns=['Word', 'Frequency']).sort_values(by='Frequency', ascending=False)
-    
-    # Plotting
-    fig, ax = plt.subplots()
-    df.head(20).plot.bar(x='Word', y='Frequency', ax=ax, color='blue')  # Only show top 20 words
-    ax.set_title("Word Frequencies")
-    ax.set_xlabel("Words")
-    ax.set_ylabel("Frequency")
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    return fig
+st.sidebar.header ("Filter:")
 
-def main():
-    st.title('Word Frequency Graph')
-    user_input = st.text_area("Enter your text here:", "Type text here...")
-    if st.button('Generate Graph'):
-        fig = plot_word_frequency(user_input)
-        st.pyplot(fig)
+Teacher = st.sidebar.multiselect(
+    "Select the Teacher:",
+    options = df["Teacher"].unique(), 
+    default = df["Teacher"].unique() 
+)
 
-if __name__ == '__main__':
-    main()
+st.title (":bar chart: Statistics of Teachers")
+st.markdown("##")
+
+# TOP KPI 
 
