@@ -179,8 +179,4 @@ Teacher = st.sidebar.multiselect(
     default = df["Teacher"].unique() 
 )
 
-st.title (":bar chart: Statistics of Teachers")
-st.markdown("##")
-
-# TOP KPI 
 
