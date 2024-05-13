@@ -161,7 +161,6 @@ cython_debug/
 
 import streamlit as st
 import pandas as pd
-import xlrd
 
 st.set_page_config(page_title = "Statistics of Teachers",
                    page_icon = ":bar_chart:",
@@ -179,4 +178,8 @@ Teacher = st.sidebar.multiselect(
     default = df["Teacher"].unique() 
 )
 
+st.title (":bar chart:", "Statistics of Teachers")
+st.markdown("##")
+
+# TOP KPI 
 
