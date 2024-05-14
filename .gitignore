@@ -182,14 +182,46 @@ st.title (":bar chart:", "Statistics of Teachers")
 st.markdown("##")
 
 # TOP KPI 
-grouped_data = df.groupby(['Teacher', 'Subjects',]).size().reset_index(name='Count')
+st.set_page_config(page_title = "Statistics of Teachers",
+                   page_icon = ":bar_chart:",
+                   layout = "wide"
+)
+
+
+df = pd.read_excel(r"/Users/thomassabti/Desktop/my_product.xlsx")
+st.sidebar.header ("Filter:")
+
+Teacher = st.sidebar.multiselect(
+    "Select the Teacher:",
+    options = df["Teacher"].unique(), 
+    default = df["Teacher"].unique() 
+)
+
+st.title ("Statistics of Teachers")
+st.markdown("##")
+
+# Group by 'Teacher' and 'Subject' and count occurrences
+subject_data = df.groupby(['Teacher', 'Subjects']).size().reset_index(name='Count')
+# Group by 'Teacher' and 'Area of Expertise' and count occurrences
 expertise_data = df.groupby(['Teacher', 'Area of expertise']).size().reset_index(name='Count')
+# Allow selection of a specific teacher to display details
 teacher_selection = st.selectbox("Choose a teacher to filter:", df['Teacher'].unique())
-filtered_data = grouped_data[grouped_data['Teacher'] == teacher_selection] 
-st.write(filtered_data)
+st.subheader(f"Details for {teacher_selection}")
+filtered_subject_data = subject_data[subject_data['Teacher'] == teacher_selection]
+st.write(filtered_subject_data)
+filtered_expertise_data = expertise_data[expertise_data['Teacher'] == teacher_selection]
+st.write(filtered_expertise_data)
 
-st.bar_chart(filtered_data.pivot (index ='Subjects',columns ='Count', values='Count'))
+ 
+st.header('Subjects Graph')
+# Display a bar chart for subjects
+subject_pivot = filtered_subject_data.pivot(index='Subjects', columns='Count', values='Count')
+st.bar_chart(subject_pivot)
+
+st.header(' Area of expertise Graph')
+# Display a bar chart for area of expertise
+expertise_pivot = filtered_expertise_data.pivot(index='Area of expertise', columns='Count', values='Count')
+st.bar_chart(expertise_pivot)
 
 
-st.bar_chart(filtered_data.pivot(index='Area of expertise', columns='Count', values='Count'))
 
