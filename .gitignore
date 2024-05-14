@@ -21,7 +21,7 @@ def intro():
        
     """
     )
-def Supervise_me()
+def Supervise_me():
     import openai
     import streamlit as st
     import pandas as pd
@@ -32,8 +32,8 @@ def Supervise_me()
     st.caption("🚀 Please enter your API key, message, and upload a CSV file.")
 
 # Securely input the API key
-    apiKey = st.text_input("Enter your API key", type="password")
-    if apiKey:
+apiKey = st.text_input("Enter your API key", type="password")
+if apiKey:
         client = openai.OpenAI(api_key=apiKey)
 
     # Get user input
@@ -45,9 +45,9 @@ def Supervise_me()
         # Read the uploaded CSV file
          df = pd.read_csv(uploaded_file)
         # Read keyword column, convert to lower and create unique set
-            csv_keywords = {kw.lower().strip() for kw in df['keywords'].dropna().unique()}
+        csv_keywords = {kw.lower().strip() for kw in df['keywords'].dropna().unique()}
 
-            if prompt:
+        if prompt:
              response = client.chat.completions.create(
                  model="gpt-3.5-turbo",
                     messages=[
@@ -57,9 +57,8 @@ def Supervise_me()
                         }
                     ],
                 )
-
-                print(response)
-                if response.choices:
+        print(response)
+        if response.choices:
                      # Extract content from the first choice's message
                     keywords = response.choices[0].message.content
 
@@ -76,13 +75,13 @@ def Supervise_me()
                     # Find intersection of keywords
                     matched_keywords = openai_keywords.intersection(csv_keywords)
                     st.write("Matched Keywords:", ', '.join(matched_keywords))
-                else:
+else:
                     st.error("No completion choices were returned from OpenAI.")
 def Statistics_of_teachers_demo():
     import streamlit as st
     import pandas as pd
     
-    st.markdown(f"# {list(page_names_to_funcs.keys())[1]}")
+    st.markdown(f"# {list(page_names_to_funcs.keys())[2]}")
 
 
     df = pd.read_excel(r"/Users/thomassabti/Desktop/my_product.xlsx")
@@ -112,7 +111,7 @@ def Statistics_of_teachers_demo():
 
 page_names_to_funcs = {
     "Welcome Page": intro,
-    "Supervise Me": Supervise_me
+    "Supervise Me": Supervise_me,
     "Statistics of Teacher": Statistics_of_teachers_demo,
     
 }
