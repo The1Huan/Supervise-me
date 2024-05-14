@@ -1,501 +1,63 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
-
-# C extensions
-*.so
-
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-cover/
-
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-
-# Flask stuff:
-instance/
-.webassets-cache
-
-# Scrapy stuff:
-.scrapy
-
-# Sphinx documentation
-docs/_build/
-
-# PyBuilder
-.pybuilder/
-target/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# IPython
-profile_default/
-ipython_config.py
-
-# pyenv
-#   For a library or package, you might want to ignore these files since the code is
-#   intended to run in multiple environments; otherwise, check them in:
-# .python-version
-
-# pipenv
-#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
-#   However, in case of collaboration, if having platform-specific dependencies or dependencies
-#   having no cross-platform support, pipenv may install dependencies that don't work, or not
-#   install all needed dependencies.
-#Pipfile.lock
-
-# poetry
-#   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.
-#   This is especially recommended for binary packages to ensure reproducibility, and is more
-#   commonly ignored for libraries.
-#   https://python-poetry.org/docs/basic-usage/#commit-your-poetrylock-file-to-version-control
-#poetry.lock
-
-# pdm
-#   Similar to Pipfile.lock, it is generally recommended to include pdm.lock in version control.
-#pdm.lock
-#   pdm stores project-wide configurations in .pdm.toml, but it is recommended to not include it
-#   in version control.
-#   https://pdm.fming.dev/#use-with-ide
-.pdm.toml
-
-# PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
-__pypackages__/
-
-# Celery stuff
-celerybeat-schedule
-celerybeat.pid
-
-# SageMath parsed files
-*.sage.py
-
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-# Spyder project settings
-.spyderproject
-.spyproject
-
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre type checker
-.pyre/
-
-# pytype static type analyzer
-.pytype/
-
-# Cython debug symbols
-cython_debug/
-
-# PyCharm
-#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
-#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
-#  and can be added to the global gitignore or merged into this file.  For a more nuclear
-#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
-#.idea/
-
 import streamlit as st
-import pandas as pd
 
-st.set_page_config(page_title = "Statistics of Teachers",
-                   page_icon = ":bar_chart:",
-                   layout = "wide"
-)
+st.set_page_config(page_title= "Supervise Me",
+                   page_icon= ':bar_chart')
 
 
-df = pd.read_excel(r"/Users/thomassabti/Desktop/my_product.xlsx")
+def intro():
+    import streamlit as st
 
-st.sidebar.header ("Filter:")
+    st.write("# Welcome to SuperviseMe")
+    st.sidebar.success("Select a function.")
 
-Teacher = st.sidebar.multiselect(
-    "Select the Teacher:",
-    options = df["Teacher"].unique(), 
-    default = df["Teacher"].unique() 
-)
+    st.markdown(
+        """
+        Supervise me is a match maker between students and supervisors for the university of St-Gallen
 
-st.title (":bar chart:", "Statistics of Teachers")
-st.markdown("##")
+        Welcome to Supervise Me, the innovative platform designed to seamlessly connect students with the ideal teachers for their bachelor or master thesis supervision. Our app streamlines the matching process by carefully considering each teacher's area of expertise and preferred subjects to ensure that every student receives personalized guidance tailored to their academic needs. Whether you are embarking on your final thesis project or looking for expert insights to shape your research, Supervise Me is here to facilitate these crucial academic partnerships, paving the way for successful scholarly achievements.
 
-# TOP KPI 
-st.set_page_config(page_title = "Statistics of Teachers",
-                   page_icon = ":bar_chart:",
-                   layout = "wide"
-)
+        -->Select a function to start!<--
+        
+
+       
+    """
+    )
+def Statistics_of_teachers_demo():
+    import streamlit as st
+    import pandas as pd
+    
+    st.markdown(f"# {list(page_names_to_funcs.keys())[1]}")
 
 
-df = pd.read_excel(r"/Users/thomassabti/Desktop/my_product.xlsx")
-st.sidebar.header ("Filter:")
-
-Teacher = st.sidebar.multiselect(
-    "Select the Teacher:",
-    options = df["Teacher"].unique(), 
-    default = df["Teacher"].unique() 
-)
-
-st.title ("Statistics of Teachers")
-st.markdown("##")
-
+    df = pd.read_excel(r"/Users/thomassabti/Desktop/my_product.xlsx")
+   
 # Group by 'Teacher' and 'Subject' and count occurrences
-subject_data = df.groupby(['Teacher', 'Subjects']).size().reset_index(name='Count')
+    subject_data = df.groupby(['Teacher', 'Subjects']).size().reset_index(name='Count')
 # Group by 'Teacher' and 'Area of Expertise' and count occurrences
-expertise_data = df.groupby(['Teacher', 'Area of expertise']).size().reset_index(name='Count')
+    expertise_data = df.groupby(['Teacher', 'Area of expertise']).size().reset_index(name='Count')
 # Allow selection of a specific teacher to display details
-teacher_selection = st.selectbox("Choose a teacher to filter:", df['Teacher'].unique())
-st.subheader(f"Details for {teacher_selection}")
-filtered_subject_data = subject_data[subject_data['Teacher'] == teacher_selection]
-st.write(filtered_subject_data)
-filtered_expertise_data = expertise_data[expertise_data['Teacher'] == teacher_selection]
-st.write(filtered_expertise_data)
+    teacher_selection = st.selectbox("Choose a teacher to filter:", df['Teacher'].unique())
+    st.subheader(f"Details for {teacher_selection}")
+    filtered_subject_data = subject_data[subject_data['Teacher'] == teacher_selection]
+    st.write(filtered_subject_data)
+    filtered_expertise_data = expertise_data[expertise_data['Teacher'] == teacher_selection]
+    st.write(filtered_expertise_data)
 
  
-st.header('Subjects Graph')
+    st.header('Subjects Graph')
 # Display a bar chart for subjects
-subject_pivot = filtered_subject_data.pivot(index='Subjects', columns='Count', values='Count')
-st.bar_chart(subject_pivot)
+    subject_pivot = filtered_subject_data.pivot(index='Subjects', columns='Count', values='Count')
+    st.bar_chart(subject_pivot)
 
-st.header(' Area of expertise Graph')
+    st.header(' Area of expertise Graph')
 # Display a bar chart for area of expertise
-expertise_pivot = filtered_expertise_data.pivot(index='Area of expertise', columns='Count', values='Count')
-st.bar_chart(expertise_pivot)
-
-
-
-
-
-
-
-
-
-
-import streamlit as st
-
-def intro():
-    import streamlit as st
-
-    st.write("# Welcome to SuperviseMe")
-    st.sidebar.success("Select a function.")
-
-    st.markdown(
-        """
-        Supervise me is a match maker between students and supervisors for the university of St-Gallen
-
-        **👈 Select a function to start!
-        
-
-        ### Want to learn more?
-
-        - Check out [streamlit.io](https://streamlit.io)
-        - Jump into our [documentation](https://docs.streamlit.io)
-        - Ask a question in our [community
-          forums](https://discuss.streamlit.io)
-
-        ### See more complex demos
-
-        - Use a neural net to [analyze the Udacity Self-driving Car Image
-          Dataset](https://github.com/streamlit/demo-self-driving)
-        - Explore a [New York City rideshare dataset](https://github.com/streamlit/demo-uber-nyc-pickups)
-    """
-    )
-
-def mapping_demo():
-    import streamlit as st
-    import pandas as pd
-    import pydeck as pdk
-
-    from urllib.error import URLError
-
-    st.markdown(f"# {list(page_names_to_funcs.keys())[2]}")
-    st.write(
-        """
-        This demo shows how to use
-[`st.pydeck_chart`](https://docs.streamlit.io/develop/api-reference/charts/st.pydeck_chart)
-to display geospatial data.
-"""
-    )
-
-    @st.cache_data
-    def from_data_file(filename):
-        url = (
-            "http://raw.githubusercontent.com/streamlit/"
-            "example-data/master/hello/v1/%s" % filename
-        )
-        return pd.read_json(url)
-
-    try:
-        ALL_LAYERS = {
-            "Bike Rentals": pdk.Layer(
-                "HexagonLayer",
-                data=from_data_file("bike_rental_stats.json"),
-                get_position=["lon", "lat"],
-                radius=200,
-                elevation_scale=4,
-                elevation_range=[0, 1000],
-                extruded=True,
-            ),
-            "Bart Stop Exits": pdk.Layer(
-                "ScatterplotLayer",
-                data=from_data_file("bart_stop_stats.json"),
-                get_position=["lon", "lat"],
-                get_color=[200, 30, 0, 160],
-                get_radius="[exits]",
-                radius_scale=0.05,
-            ),
-            "Bart Stop Names": pdk.Layer(
-                "TextLayer",
-                data=from_data_file("bart_stop_stats.json"),
-                get_position=["lon", "lat"],
-                get_text="name",
-                get_color=[0, 0, 0, 200],
-                get_size=15,
-                get_alignment_baseline="'bottom'",
-            ),
-            "Outbound Flow": pdk.Layer(
-                "ArcLayer",
-                data=from_data_file("bart_path_stats.json"),
-                get_source_position=["lon", "lat"],
-                get_target_position=["lon2", "lat2"],
-                get_source_color=[200, 30, 0, 160],
-                get_target_color=[200, 30, 0, 160],
-                auto_highlight=True,
-                width_scale=0.0001,
-                get_width="outbound",
-                width_min_pixels=3,
-                width_max_pixels=30,
-            ),
-        }
-        st.sidebar.markdown("### Map Layers")
-        selected_layers = [
-            layer
-            for layer_name, layer in ALL_LAYERS.items()
-            if st.sidebar.checkbox(layer_name, True)
-        ]
-        if selected_layers:
-            st.pydeck_chart(
-                pdk.Deck(
-                    map_style="mapbox://styles/mapbox/light-v9",
-                    initial_view_state={
-                        "latitude": 37.76,
-                        "longitude": -122.4,
-                        "zoom": 11,
-                        "pitch": 50,
-                    },
-                    layers=selected_layers,
-                )
-            )
-        else:
-            st.error("Please choose at least one layer above.")
-    except URLError as e:
-        st.error(
-            """
-            **This demo requires internet access.**
-
-            Connection error: %s
-        """
-            % e.reason
-        )
-
-def plotting_demo():
-    import streamlit as st
-    import time
-    import numpy as np
-
-    st.markdown(f'# {list(page_names_to_funcs.keys())[1]}')
-    st.write(
-        """
-        This demo illustrates a combination of plotting and animation with
-Streamlit. We're generating a bunch of random numbers in a loop for around
-5 seconds. Enjoy!
-"""
-    )
-
-    progress_bar = st.sidebar.progress(0)
-    status_text = st.sidebar.empty()
-    last_rows = np.random.randn(1, 1)
-    chart = st.line_chart(last_rows)
-
-    for i in range(1, 101):
-        new_rows = last_rows[-1, :] + np.random.randn(5, 1).cumsum(axis=0)
-        status_text.text("%i%% Complete" % i)
-        chart.add_rows(new_rows)
-        progress_bar.progress(i)
-        last_rows = new_rows
-        time.sleep(0.05)
-
-    progress_bar.empty()
-
-    # Streamlit widgets automatically run the script from top to bottom. Since
-    # this button is not connected to any other logic, it just causes a plain
-    # rerun.
-    st.button("Re-run")
-
-
-def data_frame_demo():
-    import streamlit as st
-    import pandas as pd
-    import altair as alt
-
-    from urllib.error import URLError
-
-    st.markdown(f"# {list(page_names_to_funcs.keys())[3]}")
-    st.write(
-        """
-        This demo shows how to use `st.write` to visualize Pandas DataFrames.
-
-(Data courtesy of the [UN Data Explorer](http://data.un.org/Explorer.aspx).)
-"""
-    )
-
-    @st.cache_data
-    def get_UN_data():
-        AWS_BUCKET_URL = "http://streamlit-demo-data.s3-us-west-2.amazonaws.com"
-        df = pd.read_csv(AWS_BUCKET_URL + "/agri.csv.gz")
-        return df.set_index("Region")
-
-    try:
-        df = get_UN_data()
-        countries = st.multiselect(
-            "Choose countries", list(df.index), ["China", "United States of America"]
-        )
-        if not countries:
-            st.error("Please select at least one country.")
-        else:
-            data = df.loc[countries]
-            data /= 1000000.0
-            st.write("### Gross Agricultural Production ($B)", data.sort_index())
-
-            data = data.T.reset_index()
-            data = pd.melt(data, id_vars=["index"]).rename(
-                columns={"index": "year", "value": "Gross Agricultural Product ($B)"}
-            )
-            chart = (
-                alt.Chart(data)
-                .mark_area(opacity=0.3)
-                .encode(
-                    x="year:T",
-                    y=alt.Y("Gross Agricultural Product ($B):Q", stack=None),
-                    color="Region:N",
-                )
-            )
-            st.altair_chart(chart, use_container_width=True)
-    except URLError as e:
-        st.error(
-            """
-            **This demo requires internet access.**
-
-            Connection error: %s
-        """
-            % e.reason
-        )
+    expertise_pivot = filtered_expertise_data.pivot(index='Area of expertise', columns='Count', values='Count')
+    st.bar_chart(expertise_pivot)
 
 page_names_to_funcs = {
-    "—": intro,
-    "Plotting Demo": plotting_demo,
-    "Mapping Demo": mapping_demo,
-    "DataFrame Demo": data_frame_demo
+    "Welcome Page": intro,
+    "Statistics of Teacher": Statistics_of_teachers_demo,
 }
-
-demo_name = st.sidebar.selectbox("Choose a demo", page_names_to_funcs.keys())
+import streamlit as st
+demo_name = st.sidebar.selectbox("How can we help you?", page_names_to_funcs.keys())
 page_names_to_funcs[demo_name]()
-
-
-
-
-
-
-
-
-
-
-
-def intro():
-    import streamlit as st
-
-    st.write("# Welcome to SuperviseMe")
-    st.sidebar.success("Select a function.")
-
-    st.markdown(
-        """
-        Supervise me is a match maker between students and supervisors for the university of St-Gallen
-
-        **👈 Select a function to start!
-        
-
-        ### Want to learn more?
-
-        - Check out [streamlit.io](https://streamlit.io)
-        - Jump into our [documentation](https://docs.streamlit.io)
-        - Ask a question in our [community
-          forums](https://discuss.streamlit.io)
-
-        ### See more complex demos
-
-        - Use a neural net to [analyze the Udacity Self-driving Car Image
-          Dataset](https://github.com/streamlit/demo-self-driving)
-        - Explore a [New York City rideshare dataset](https://github.com/streamlit/demo-uber-nyc-pickups)
-    """
-    )
