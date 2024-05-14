@@ -182,4 +182,14 @@ st.title (":bar chart:", "Statistics of Teachers")
 st.markdown("##")
 
 # TOP KPI 
+grouped_data = df.groupby(['Teacher', 'Subjects',]).size().reset_index(name='Count')
+expertise_data = df.groupby(['Teacher', 'Area of expertise']).size().reset_index(name='Count')
+teacher_selection = st.selectbox("Choose a teacher to filter:", df['Teacher'].unique())
+filtered_data = grouped_data[grouped_data['Teacher'] == teacher_selection] 
+st.write(filtered_data)
+
+st.bar_chart(filtered_data.pivot (index ='Subjects',columns ='Count', values='Count'))
+
+
+st.bar_chart(filtered_data.pivot(index='Area of expertise', columns='Count', values='Count'))
 
