@@ -459,3 +459,144 @@ page_names_to_funcs = {
 import streamlit as st
 demo_name = st.sidebar.selectbox("How can we help you?", page_names_to_funcs.keys())
 page_names_to_funcs[demo_name]()
+
+
+Try 5 
+
+import streamlit as st
+import pandas as pd
+import spacy
+from spacy.tokens import DocBin
+import openai
+import re
+
+# Load spaCy's English model
+nlp = spacy.load("en_core_web_md")
+
+# Configure the Streamlit app
+st.set_page_config(page_title="Supervise Me", page_icon=':bar_chart')
+
+# Function to display the introduction
+def intro():
+    st.write("# Welcome to SuperviseMe")
+    st.sidebar.success("Select a function.")
+    st.markdown("""
+        Supervise Me is a matchmaker between students and supervisors at the University of St. Gallen.
+
+        Welcome to Supervise Me, the innovative platform designed to seamlessly connect students with the ideal teachers for their bachelor or master thesis supervision. Our app streamlines the matching process by carefully considering each teacher's area of expertise and preferred subjects to ensure that every student receives personalized guidance tailored to their academic needs. Whether you are embarking on your final thesis project or looking for expert insights to shape your research, Supervise Me is here to facilitate these crucial academic partnerships, paving the way for successful scholarly achievements.
+
+        --> Select a function to start! <--
+    """)
+
+# Function to match students with supervisors
+def supervise_me():
+    data = pd.read_excel('/Users/raffi/documents/Edok.xlsx')
+    data['content'] = data['TitelInEnglisch'].fillna('') + ' ' + data['KurzfassungInEnglisch'].fillna('')
+    data['email'] = data['Teacher'].apply(lambda name: f"{name.split()[0].lower()}.{name.split()[-1].lower()}@unisg.ch")
+    
+    st.title("Recherche de thèses similaires")
+    user_input = st.text_area("Décrivez le sujet de votre thèse", "Tapez votre texte ici...")
+
+    def show_teacher_theses(teacher):
+        st.write(f"Thèses supervisées par {teacher}:")
+        teacher_theses = data[data['Teacher'] == teacher]
+        for _, row in teacher_theses.iterrows():
+            st.write(f"Titre: {row['TitelInEnglisch']}")
+            st.write("---")
+        if st.button("Retour"):
+            st.session_state['action'] = 'search'
+
+    if 'action' not in st.session_state:
+        st.session_state['action'] = 'search'
+
+    if st.session_state['action'] == 'show_theses' and 'selected_teacher' in st.session_state:
+        show_teacher_theses(st.session_state['selected_teacher'])
+    else:
+        if st.button("Rechercher"):
+            if user_input != "Tapez votre texte ici...":
+                user_doc = nlp(user_input)
+                similarities = []
+
+                for i, row in data.iterrows():
+                    thesis_doc = nlp(row['content'])
+                    similarity = user_doc.similarity(thesis_doc)
+                    similarities.append((similarity, i))
+                
+                similarities.sort(reverse=True, key=lambda x: x[0])
+                similar_docs = [index for _, index in similarities[:5]]
+
+                st.write("Thèses les plus similaires à votre description :")
+                for index in similar_docs:
+                    with st.expander(f"{data.iloc[index]['TitelInEnglisch']}"):
+                        st.write(f"Professeur : {data.iloc[index]['Teacher']}")
+                        st.write(f"Email : {data.iloc[index]['email']}")
+                        st.write(f"Similarité : {similarities[similar_docs.index(index)][0]:.2f}")
+                        if st.button("Voir thèses de ce professeur", key=f"teacher-{index}"):
+                            st.session_state['selected_teacher'] = data.iloc[index]['Teacher']
+                            st.session_state['action'] = 'show_theses'
+            else:
+                st.write("Veuillez entrer une description.")
+
+# Function for API key input and keyword matching
+def api_key_input():
+    apiKey = st.text_input("Enter your API key", type="password")
+    if apiKey:
+        openai.api_key = apiKey
+        prompt = st.text_input("Enter your message")
+        uploaded_file = st.file_uploader("Upload a CSV file containing keywords", type=['csv'])
+
+        if uploaded_file:
+            df = pd.read_csv(uploaded_file)
+            csv_keywords = {kw.lower().strip() for kw in df['keywords'].dropna().unique()}
+
+            if prompt:
+                response = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo",
+                    messages=[{"role": "user", "content": f"give me 10 keywords, following this criteria: {prompt}"}]
+                )
+                if response.choices:
+                    keywords = response.choices[0].message['content']
+                    openai_keywords = set(re.sub(r'^\d+\.\s*', '', kw).lower().strip() for kw in keywords.split('\n'))
+
+                    st.write("Extracted Keywords from OpenAI:", ', '.join(openai_keywords))
+                    st.write("Keywords from CSV file:", ', '.join(csv_keywords))
+
+                    matched_keywords = openai_keywords.intersection(csv_keywords)
+                    st.write("Matched Keywords:", ', '.join(matched_keywords))
+                else:
+                    st.error("No completion choices were returned from OpenAI.")
+
+# Function to display statistics of teachers
+def statistics_of_teachers():
+    df = pd.read_excel(r"/Users/raffi/documents/Edok.xlsx")
+    subject_data = df.groupby(['Teacher', 'Subjects']).size().reset_index(name='Count')
+    expertise_data = df.groupby(['Teacher', 'Area of expertise']).size().reset_index(name='Count')
+
+    teacher_selection = st.selectbox("Choose a teacher to filter:", df['Teacher'].unique())
+    st.subheader(f"Details for {teacher_selection}")
+    filtered_subject_data = subject_data[subject_data['Teacher'] == teacher_selection]
+    st.write(filtered_subject_data)
+    filtered_expertise_data = expertise_data[expertise_data['Teacher'] == teacher_selection]
+    st.write(filtered_expertise_data)
+
+    st.header('Subjects Graph')
+    subject_pivot = filtered_subject_data.pivot(index='Subjects', columns='Count', values='Count')
+    st.bar_chart(subject_pivot)
+
+    st.header('Area of expertise Graph')
+    expertise_pivot = filtered_expertise_data.pivot(index='Area of expertise', columns='Count', values='Count')
+    st.bar_chart(expertise_pivot)
+
+# Mapping page names to functions
+page_names_to_funcs = {
+    "Welcome Page": intro,
+    "Supervise Me": supervise_me,
+    "API Key Input": api_key_input,
+    "Statistics of Teachers": statistics_of_teachers,
+}
+
+# Sidebar for navigation
+demo_name = st.sidebar.selectbox("How can we help you?", page_names_to_funcs.keys())
+page_names_to_funcs[demo_name]()
+
+
