@@ -1,0 +1,22 @@
+import streamlit as st
+import pandas as pd
+
+# Charger les données
+data = pd.read_excel('/Users/fabricerebstein/Desktop/Edok.xlsx')
+
+# Fonction pour filtrer les données
+def filter_data(level, domain, subject):
+    return data[(data['Stufe'] == level) & (data['Area of expertise'].str.contains(domain, case=False)) & (data['Subjects'].str.contains(subject, case=False))]
+
+# Titre de l'application
+st.title("Matcheur de thèses pour étudiants")
+
+# Création des sélecteurs pour le filtrage
+level = st.selectbox("Niveau d'étude", options=data['Stufe'].unique())
+domain = st.text_input("Domaine d'expertise")
+subject = st.text_input("Sujet de thèse")
+
+# Bouton pour filtrer
+if st.button("Rechercher"):
+    filtered_data = filter_data(level, domain, subject)
+    st.write(filtered_data)
