@@ -1,3 +1,5 @@
 openai
 streamlit
 pandas
+scikit-learn
+openpyxl
