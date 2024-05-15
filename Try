@@ -1,22 +1,135 @@
 import streamlit as st
 import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 # Charger les données
 data = pd.read_excel('/Users/fabricerebstein/Desktop/Edok.xlsx')
 
-# Fonction pour filtrer les données
-def filter_data(level, domain, subject):
-    return data[(data['Stufe'] == level) & (data['Area of expertise'].str.contains(domain, case=False)) & (data['Subjects'].str.contains(subject, case=False))]
+# Préparation des données: concaténer les titres et les résumés en anglais pour une comparaison complète
+data['content'] = data['TitelInEnglisch'].fillna('') + ' ' + data['KurzfassungInEnglisch'].fillna('')
 
-# Titre de l'application
-st.title("Matcheur de thèses pour étudiants")
+# Génération de l'adresse email des professeurs à partir de leurs noms
+data['email'] = data['Teacher'].apply(lambda name: f"{name.split()[0].lower()}.{name.split()[-1].lower()}@unisg.ch")
 
-# Création des sélecteurs pour le filtrage
-level = st.selectbox("Niveau d'étude", options=data['Stufe'].unique())
-domain = st.text_input("Domaine d'expertise")
-subject = st.text_input("Sujet de thèse")
+# Initialiser le vectorisateur TF-IDF
+vectorizer = TfidfVectorizer(stop_words='english')
+tfidf_matrix = vectorizer.fit_transform(data['content'])
 
-# Bouton pour filtrer
-if st.button("Rechercher"):
-    filtered_data = filter_data(level, domain, subject)
-    st.write(filtered_data)
+# Application Streamlit
+st.title("Recherche de thèses similaires")
+
+# Entrée de texte par l'utilisateur
+user_input = st.text_area("Décrivez le sujet de votre thèse", "Tapez votre texte ici...")
+
+# Affichage conditionnel basé sur la sélection d'un professeur
+if 'selected_teacher' in st.session_state and st.session_state['selected_teacher']:
+    selected_teacher = st.session_state['selected_teacher']
+    st.write(f"Thèses supervisées par {selected_teacher}:")
+    teacher_theses = data[data['Teacher'] == selected_teacher]
+    for _, row in teacher_theses.iterrows():
+        st.write(f"Titre: {row['TitelInEnglisch']}")
+        st.write("---")
+    if st.button("Retour"):
+        st.session_state['selected_teacher'] = None
+else:
+    # Bouton de recherche
+    if st.button("Rechercher"):
+        if user_input != "Tapez votre texte ici...":
+            # Vectoriser le texte de l'utilisateur en utilisant le même vectorisateur
+            user_vector = vectorizer.transform([user_input])
+
+            # Calculer la similarité cosinus entre le texte de l'utilisateur et toutes les thèses
+            cos_similarity = cosine_similarity(user_vector, tfidf_matrix)
+
+            # Trouver les indices des thèses les plus similaires
+            similar_docs = cos_similarity[0].argsort()[:-6:-1]  # Top 5 indices
+
+            # Afficher les thèses les plus similaires
+            st.write("Thèses les plus similaires à votre description :")
+            for index in similar_docs:
+                with st.expander(f"{data.iloc[index]['TitelInEnglisch']}"):
+                    st.write(f"Professeur : {data.iloc[index]['Teacher']}")
+                    st.write(f"Email : {data.iloc[index]['email']}")
+                    st.write(f"Similarité : {cos_similarity[0][index]:.2f}")
+                    btn_key = f"btn_{index}"
+                    if st.button("Voir thèses de ce professeur", key=btn_key):
+                        st.session_state['selected_teacher'] = data.iloc[index]['Teacher']
+        else:
+            st.write("Veuillez entrer une description.")
+
+
+
+
+
+
+
+
+
+
+Try 2
+
+import streamlit as st
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
+# Charger les données
+data = pd.read_excel('/Users/fabricerebstein/Desktop/Edok.xlsx')
+
+# Préparation des données: concaténer les titres et les résumés en anglais pour une comparaison complète
+data['content'] = data['TitelInEnglisch'].fillna('') + ' ' + data['KurzfassungInEnglisch'].fillna('')
+
+# Génération de l'adresse email des professeurs à partir de leurs noms
+data['email'] = data['Teacher'].apply(lambda name: f"{name.split()[0].lower()}.{name.split()[-1].lower()}@unisg.ch")
+
+# Initialiser le vectorisateur TF-IDF
+vectorizer = TfidfVectorizer(stop_words='english')
+tfidf_matrix = vectorizer.fit_transform(data['content'])
+
+# Application Streamlit
+st.title("Recherche de thèses similaires")
+
+# Entrée de texte par l'utilisateur
+user_input = st.text_area("Décrivez le sujet de votre thèse", "Tapez votre texte ici...")
+
+def show_teacher_theses(teacher):
+    st.write(f"Thèses supervisées par {teacher}:")
+    teacher_theses = data[data['Teacher'] == teacher]
+    for _, row in teacher_theses.iterrows():
+        st.write(f"Titre: {row['TitelInEnglisch']}")
+        st.write("---")
+    if st.button("Retour"):
+        st.session_state['action'] = 'search'
+
+if 'action' not in st.session_state:
+    st.session_state['action'] = 'search'
+
+if st.session_state['action'] == 'show_theses' and 'selected_teacher' in st.session_state:
+    show_teacher_theses(st.session_state['selected_teacher'])
+else:
+    # Bouton de recherche
+    if st.button("Rechercher"):
+        if user_input != "Tapez votre texte ici...":
+            # Vectoriser le texte de l'utilisateur en utilisant le même vectorisateur
+            user_vector = vectorizer.transform([user_input])
+
+            # Calculer la similarité cosinus entre le texte de l'utilisateur et toutes les thèses
+            cos_similarity = cosine_similarity(user_vector, tfidf_matrix)
+
+            # Trouver les indices des thèses les plus similaires
+            similar_docs = cos_similarity[0].argsort()[:-6:-1]  # Top 5 indices
+
+            # Afficher les thèses les plus similaires
+            st.write("Thèses les plus similaires à votre description :")
+            for index in similar_docs:
+                with st.expander(f"{data.iloc[index]['TitelInEnglisch']}"):
+                    st.write(f"Professeur : {data.iloc[index]['Teacher']}")
+                    st.write(f"Email : {data.iloc[index]['email']}")
+                    st.write(f"Similarité : {cos_similarity[0][index]:.2f}")
+                    if st.button("Voir thèses de ce professeur", key=f"teacher-{index}"):
+                        st.session_state['selected_teacher'] = data.iloc[index]['Teacher']
+                        st.session_state['action'] = 'show_theses'
+        else:
+            st.write("Veuillez entrer une description.")
+
