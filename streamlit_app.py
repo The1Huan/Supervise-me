@@ -31,11 +31,10 @@ def display_teacher_statistics(data, teacher_name):
     st.write(expertise_data)
 
     st.header('Subjects Graph')
-    subject_pivot = subject_data.pivot(index='Subjects', columns='Count', values='Count')
-    st.bar_chart(subject_pivot)
+    st.bar_chart(subject_data.set_index('Subjects'))
+
     st.header('Area of expertise Graph')
-    expertise_pivot = expertise_data.pivot(index='Area of expertise', columns='Count', values='Count')
-    st.bar_chart(expertise_pivot)
+    st.bar_chart(expertise_data.set_index('Area of expertise'))
 
 def Supervise_me():
     uploaded_file = st.file_uploader("Upload a CSV file containing keywords", type=['csv'])
@@ -84,17 +83,9 @@ def Supervise_me():
                             st.write(f"Similarité : {cos_similarity[0][index]:.2f}")
                             teacher_name = data.iloc[index]['Teacher']
                             if st.button("Voir thèses de ce professeur", key=f"teacher-{index}"):
-                                st.header('Subjects Graph')
-                                subject_data = data[data['Teacher'] == teacher_name]['Subjects'].value_counts().reset_index()
-                                subject_data.columns = ['Subjects', 'Count']
-                                subject_pivot = subject_data.pivot(index='Subjects', columns='Count', values='Count')
-                                st.bar_chart(subject_pivot)
-
-                                st.header('Area of expertise Graph')
-                                expertise_data = data[data['Teacher'] == teacher_name]['Area of expertise'].value_counts().reset_index()
-                                expertise_data.columns = ['Area of expertise', 'Count']
-                                expertise_pivot = expertise_data.pivot(index='Area of expertise', columns='Count', values='Count')
-                                st.bar_chart(expertise_pivot)
+                                st.session_state['selected_teacher'] = teacher_name
+                                st.session_state['action'] = 'show_theses'
+                                st.experimental_rerun()
                 else:
                     st.write("Veuillez entrer une description.")
 
