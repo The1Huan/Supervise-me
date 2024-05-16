@@ -102,7 +102,7 @@ def statistics_of_teachers():
     # Load data
     df = pd.read_csv(r"/Users/fabricerebstein/Desktop/Edok.csv")
    
-    # Group by 'Teacher' and 'Subject' and count occurrences
+    # Group by 'Teacher' and 'Subjects' and count occurrences
     subject_data = df.groupby(['Teacher', 'Subjects']).size().reset_index(name='Count')
     # Group by 'Teacher' and 'Area of Expertise' and count occurrences
     expertise_data = df.groupby(['Teacher', 'Area of expertise']).size().reset_index(name='Count')
@@ -128,6 +128,8 @@ def statistics_of_teachers():
             ax.set_xlabel('Subjects')
             ax.set_ylabel('Count')
             ax.legend(title="Teachers")
+            # Rotate the x-axis labels to vertical
+            ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
             st.pyplot(fig)
 
         # Display data for areas of expertise
@@ -143,6 +145,8 @@ def statistics_of_teachers():
             ax.set_xlabel('Area of Expertise')
             ax.set_ylabel('Count')
             ax.legend(title="Teachers")
+            # Rotate the x-axis labels to vertical
+            ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
             st.pyplot(fig)
 
 # Assuming this is part of a larger Streamlit app, ensure the function is called correctly
@@ -162,4 +166,5 @@ st.sidebar.title("Navigation")
 selection = st.sidebar.radio("Go to", list(page_names_to_funcs.keys()))
 page_names_to_funcs[selection]()
    
+
 
