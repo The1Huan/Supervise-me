@@ -90,13 +90,8 @@ def show_teacher_theses(teacher):
 
 def statistics_of_teachers():
     st.markdown("# Statistics of Teachers")
-    if 'stats_data' not in st.session_state:
-        stats_uploaded_file = st.file_uploader("Upload a CSV file containing keywords", type=['csv'], key="stats_uploader")
-        if stats_uploaded_file:
-            st.session_state['stats_data'] = pd.read_csv(stats_uploaded_file)
-
-    if 'stats_data' in st.session_state:
-        df = st.session_state['stats_data']
+    if 'data' in st.session_state:
+        df = st.session_state['data']
         subject_data = df.groupby(['Teacher', 'Subjects']).size().reset_index(name='Count')
         expertise_data = df.groupby(['Teacher', 'Area of expertise']).size().reset_index(name='Count')
         teacher_selection = st.multiselect("Choose teachers to filter:", df['Teacher'].unique(), key="teacher_selection")
