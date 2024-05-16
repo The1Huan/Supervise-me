@@ -23,9 +23,19 @@ def Supervise_me():
         data = pd.read_csv(uploaded_file)
         
         # Use title in original language if title in English is NaN
-        data['TitelInEnglisch'] = data['TitelInEnglisch'].fillna(data['TitelInOriginalsprache'])
+        if 'TitelInEnglisch' in data.columns and 'TitelInOriginalsprache' in data.columns:
+            data['TitelInEnglisch'] = data['TitelInEnglisch'].fillna(data['TitelInOriginalsprache'])
+        else:
+            st.error("The required columns 'TitelInEnglisch' and/or 'TitelInOriginalsprache' are missing from the CSV.")
+            return
+        
+        # Ensure 'Teacher' column exists
+        if 'Teacher' not in data.columns:
+            st.error("The required column 'Teacher' is missing from the CSV.")
+            return
+        
         data['content'] = data['TitelInEnglisch'].fillna('') + ' ' + data['KurzfassungInEnglisch'].fillna('')
-        data['email'] = data['Teacher'].apply(lambda name: f"{name.split()[0].lower()}.{name.split()[-1].lower()}@unisg.ch")
+        data['email'] = data['Teacher'].apply(lambda name: f"{name.split(',')[1].split()[0].lower()}.{name.split(',')[0].lower()}@unisg.ch")
 
         vectorizer = TfidfVectorizer(stop_words='english')
         tfidf_matrix = vectorizer.fit_transform(data['content'])
@@ -82,39 +92,48 @@ def Supervise_me():
                             expertise_pivot = filtered_expertise_data.pivot(index='Area of expertise', columns='Count', values='Count')
                             st.bar_chart(expertise_pivot)
 
-                            # Create hyperlink to the paper
-                            doc_link = f"https://universitaetstgallen.sharepoint.com/sites/EDOCDB/edocDocsPublished/{data.iloc[index]['Name']}"
-                            st.markdown(f"[Voir la thèse complète]({doc_link})")
-
+                            if st.button("Voir thèses de ce professeur", key=f"teacher-{index}"):
+                                st.session_state['selected_teacher'] = teacher_name
+                                st.session_state['action'] = 'show_theses'
+                                st.experimental_rerun()
                 else:
                     st.write("Veuillez entrer une description.")
 
 def display_teacher_statistics(data, teacher_name):
     st.subheader(f"Details for {teacher_name}")
 
-    subject_data = data[data['Teacher'] == teacher_name]['Subjects'].value_counts().reset_index()
-    subject_data.columns = ['Subjects', 'Count']
-    st.write("Subjects data:")
-    st.write(subject_data)
+    if 'Subjects' in data.columns and 'Area of expertise' in data.columns:
+        subject_data = data[data['Teacher'] == teacher_name]['Subjects'].value_counts().reset_index()
+        subject_data.columns = ['Subjects', 'Count']
+        st.write("Subjects data:")
+        st.write(subject_data)
 
-    expertise_data = data[data['Teacher'] == teacher_name]['Area of expertise'].value_counts().reset_index()
-    expertise_data.columns = ['Area of expertise', 'Count']
-    st.write("Area of expertise data:")
-    st.write(expertise_data)
+        expertise_data = data[data['Teacher'] == teacher_name]['Area of expertise'].value_counts().reset_index()
+        expertise_data.columns = ['Area of expertise', 'Count']
+        st.write("Area of expertise data:")
+        st.write(expertise_data)
 
-    st.header('Subjects Graph')
-    st.bar_chart(subject_data.set_index('Subjects'))
+        st.header('Subjects Graph')
+        st.bar_chart(subject_data.set_index('Subjects'))
 
-    st.header('Area of expertise Graph')
-    st.bar_chart(expertise_data.set_index('Area of expertise'))
+        st.header('Area of expertise Graph')
+        st.bar_chart(expertise_data.set_index('Area of expertise'))
+    else:
+        st.error("The required columns 'Subjects' and/or 'Area of expertise' are missing from the CSV.")
 
 def Statistics_of_teachers_demo(selected_teacher=None):
-    if selected_teacher:
-        uploaded_file = st.file_uploader("Upload a CSV file containing keywords", type=['csv'])
-        if uploaded_file:
-            df = pd.read_csv(uploaded_file)
-            subject_data = df.groupby(['Teacher', 'Subjects']).size().reset_index(name='Count')
-            expertise_data = df.groupby(['Teacher', 'Area of expertise']).size().reset_index(name='Count')
+    uploaded_file = st.file_uploader("Upload a CSV file containing keywords", type=['csv'])
+    if uploaded_file:
+        df = pd.read_csv(uploaded_file)
+        
+        if 'Teacher' not in df.columns or 'Subjects' not in df.columns or 'Area of expertise' not in df.columns:
+            st.error("The required columns 'Teacher', 'Subjects', and/or 'Area of expertise' are missing from the CSV.")
+            return
+        
+        subject_data = df.groupby(['Teacher', 'Subjects']).size().reset_index(name='Count')
+        expertise_data = df.groupby(['Teacher', 'Area of expertise']).size().reset_index(name='Count')
+        
+        if selected_teacher:
             st.subheader(f"Details for {selected_teacher}")
             filtered_subject_data = subject_data[subject_data['Teacher'] == selected_teacher]
             st.write(filtered_subject_data)
@@ -126,13 +145,8 @@ def Statistics_of_teachers_demo(selected_teacher=None):
             st.header('Area of expertise Graph')
             expertise_pivot = filtered_expertise_data.pivot(index='Area of expertise', columns='Count', values='Count')
             st.bar_chart(expertise_pivot)
-    else:
-        st.markdown(f"# {list(page_names_to_funcs.keys())[2]}")
-        uploaded_file = st.file_uploader("Upload a CSV file containing keywords", type=['csv'])
-        if uploaded_file:
-            df = pd.read_csv(uploaded_file)
-            subject_data = df.groupby(['Teacher', 'Subjects']).size().reset_index(name='Count')
-            expertise_data = df.groupby(['Teacher', 'Area of expertise']).size().reset_index(name='Count')
+        else:
+            st.markdown(f"# {list(page_names_to_funcs.keys())[2]}")
             teacher_selection = st.selectbox("Choose a teacher to filter:", df['Teacher'].unique())
             st.subheader(f"Details for {teacher_selection}")
             filtered_subject_data = subject_data[subject_data['Teacher'] == teacher_selection]
@@ -140,21 +154,4 @@ def Statistics_of_teachers_demo(selected_teacher=None):
             filtered_expertise_data = expertise_data[expertise_data['Teacher'] == teacher_selection]
             st.write(filtered_expertise_data)
             st.header('Subjects Graph')
-            subject_pivot = filtered_subject_data.pivot(index='Subjects', columns='Count', values='Count')
-            st.bar_chart(subject_pivot)
-            st.header('Area of expertise Graph')
-            expertise_pivot = filtered_expertise_data.pivot(index='Area of expertise', columns='Count', values='Count')
-            st.bar_chart(expertise_pivot)
-
-page_names_to_funcs = {
-    "Welcome Page": intro,
-    "Supervise Me": Supervise_me,
-    "Statistics of Teacher": Statistics_of_teachers_demo,
-}
-
-# Main
-demo_name = st.sidebar.selectbox("How can we help you?", page_names_to_funcs.keys())
-if demo_name == "Statistics of Teacher" and 'selected_teacher' in st.session_state:
-    Statistics_of_teachers_demo(st.session_state['selected_teacher'])
-else:
-    page_names_to_funcs[demo_name]()
+            subject
