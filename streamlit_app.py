@@ -37,7 +37,7 @@ def Supervise_me():
         if st.session_state['action'] == 'show_theses' and 'selected_teacher' in st.session_state:
             selected_teacher = st.session_state['selected_teacher']
             st.write(f"Thèses supervisées par {selected_teacher}:")
-            
+
             teacher_theses = data[data['Teacher'] == selected_teacher]
             for _, row in teacher_theses.iterrows():
                 st.write(f"Titre: {row['TitelInEnglisch']}")
@@ -71,7 +71,6 @@ def Supervise_me():
                     st.write("Veuillez entrer une description.")
 
 def display_teacher_statistics(data, teacher_name):
-    # Extracting and displaying subject data for the selected teacher
     st.subheader(f"Details for {teacher_name}")
 
     subject_data = data[data['Teacher'] == teacher_name]['Subjects'].value_counts().reset_index()
@@ -79,7 +78,6 @@ def display_teacher_statistics(data, teacher_name):
     st.write("Subjects data:")
     st.write(subject_data)
 
-    # Extracting and displaying area of expertise data for the selected teacher
     expertise_data = data[data['Teacher'] == teacher_name]['Area of expertise'].value_counts().reset_index()
     expertise_data.columns = ['Area of expertise', 'Count']
     st.write("Area of expertise data:")
@@ -91,25 +89,43 @@ def display_teacher_statistics(data, teacher_name):
     st.header('Area of expertise Graph')
     st.bar_chart(expertise_data.set_index('Area of expertise'))
 
-def Statistics_of_teachers_demo():
-    st.markdown(f"# {list(page_names_to_funcs.keys())[2]}")
-    uploaded_file = st.file_uploader("Upload a CSV file containing keywords", type=['csv'])
-    if uploaded_file:
-        df = pd.read_csv(uploaded_file)
-        subject_data = df.groupby(['Teacher', 'Subjects']).size().reset_index(name='Count')
-        expertise_data = df.groupby(['Teacher', 'Area of expertise']).size().reset_index(name='Count')
-        teacher_selection = st.selectbox("Choose a teacher to filter:", df['Teacher'].unique())
-        st.subheader(f"Details for {teacher_selection}")
-        filtered_subject_data = subject_data[subject_data['Teacher'] == teacher_selection]
-        st.write(filtered_subject_data)
-        filtered_expertise_data = expertise_data[expertise_data['Teacher'] == teacher_selection]
-        st.write(filtered_expertise_data)
-        st.header('Subjects Graph')
-        subject_pivot = filtered_subject_data.pivot(index='Subjects', columns='Count', values='Count')
-        st.bar_chart(subject_pivot)
-        st.header('Area of expertise Graph')
-        expertise_pivot = filtered_expertise_data.pivot(index='Area of expertise', columns='Count', values='Count')
-        st.bar_chart(expertise_pivot)
+def Statistics_of_teachers_demo(selected_teacher=None):
+    if selected_teacher:
+        uploaded_file = st.file_uploader("Upload a CSV file containing keywords", type=['csv'])
+        if uploaded_file:
+            df = pd.read_csv(uploaded_file)
+            subject_data = df.groupby(['Teacher', 'Subjects']).size().reset_index(name='Count')
+            expertise_data = df.groupby(['Teacher', 'Area of expertise']).size().reset_index(name='Count')
+            st.subheader(f"Details for {selected_teacher}")
+            filtered_subject_data = subject_data[subject_data['Teacher'] == selected_teacher]
+            st.write(filtered_subject_data)
+            filtered_expertise_data = expertise_data[expertise_data['Teacher'] == selected_teacher]
+            st.write(filtered_expertise_data)
+            st.header('Subjects Graph')
+            subject_pivot = filtered_subject_data.pivot(index='Subjects', columns='Count', values='Count')
+            st.bar_chart(subject_pivot)
+            st.header('Area of expertise Graph')
+            expertise_pivot = filtered_expertise_data.pivot(index='Area of expertise', columns='Count', values='Count')
+            st.bar_chart(expertise_pivot)
+    else:
+        st.markdown(f"# {list(page_names_to_funcs.keys())[2]}")
+        uploaded_file = st.file_uploader("Upload a CSV file containing keywords", type=['csv'])
+        if uploaded_file:
+            df = pd.read_csv(uploaded_file)
+            subject_data = df.groupby(['Teacher', 'Subjects']).size().reset_index(name='Count')
+            expertise_data = df.groupby(['Teacher', 'Area of expertise']).size().reset_index(name='Count')
+            teacher_selection = st.selectbox("Choose a teacher to filter:", df['Teacher'].unique())
+            st.subheader(f"Details for {teacher_selection}")
+            filtered_subject_data = subject_data[subject_data['Teacher'] == teacher_selection]
+            st.write(filtered_subject_data)
+            filtered_expertise_data = expertise_data[expertise_data['Teacher'] == teacher_selection]
+            st.write(filtered_expertise_data)
+            st.header('Subjects Graph')
+            subject_pivot = filtered_subject_data.pivot(index='Subjects', columns='Count', values='Count')
+            st.bar_chart(subject_pivot)
+            st.header('Area of expertise Graph')
+            expertise_pivot = filtered_expertise_data.pivot(index='Area of expertise', columns='Count', values='Count')
+            st.bar_chart(expertise_pivot)
 
 page_names_to_funcs = {
     "Welcome Page": intro,
@@ -117,5 +133,9 @@ page_names_to_funcs = {
     "Statistics of Teacher": Statistics_of_teachers_demo,
 }
 
+# Main
 demo_name = st.sidebar.selectbox("How can we help you?", page_names_to_funcs.keys())
-page_names_to_funcs[demo_name]()
+if demo_name == "Statistics of Teacher" and 'selected_teacher' in st.session_state:
+    Statistics_of_teachers_demo(st.session_state['selected_teacher'])
+else:
+    page_names_to_funcs[demo_name]()
