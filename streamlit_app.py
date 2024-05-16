@@ -74,7 +74,7 @@ def Supervise_me():
                 if user_input != "Tapez votre texte ici...":
                     user_vector = vectorizer.transform([user_input])
                     cos_similarity = cosine_similarity(user_vector, tfidf_matrix)
-                    similar_docs = cos_similarity[0].argsort()[:-6:-1]
+                    similar_docs = cos_similarity[0].argsort()[:-6::-1]
 
                     st.write("Thèses les plus similaires à votre description :")
                     for index in similar_docs:
@@ -84,19 +84,12 @@ def Supervise_me():
                             st.write(f"Similarité : {cos_similarity[0][index]:.2f}")
                             teacher_name = data.iloc[index]['Teacher']
                             if st.button("Voir thèses de ce professeur", key=f"teacher-{index}"):
-                                st.header('Subjects Graph')
-                                subject_data = data[data['Teacher'] == teacher_name]['Subjects'].value_counts().reset_index()
-                                subject_data.columns = ['Subjects', 'Count']
-                                subject_pivot = subject_data.pivot(index='Subjects', columns='Count', values='Count')
-                                st.bar_chart(subject_pivot)
+                                st.session_state['selected_teacher'] = teacher_name
+                                st.session_state['action'] = 'show_theses'
+                                st.experimental_rerun()
 
-                                st.header('Area of expertise Graph')
-                                expertise_data = data[data['Teacher'] == teacher_name]['Area of expertise'].value_counts().reset_index()
-                                expertise_data.columns = ['Area of expertise', 'Count']
-                                expertise_pivot = expertise_data.pivot(index='Area of expertise', columns='Count', values='Count')
-                                st.bar_chart(expertise_pivot)
-                else:
-                    st.write("Veuillez entrer une description.")
+
+
 
 page_names_to_funcs = {
     "Welcome Page": intro,
