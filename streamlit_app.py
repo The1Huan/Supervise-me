@@ -22,11 +22,13 @@ def intro():
     uploaded_file = st.file_uploader("Upload a CSV file containing keywords", type=['csv'])
     if uploaded_file is not None:
         st.session_state['uploaded_file'] = uploaded_file
-        st.success("File uploaded successfully! Please select a function from the sidebar.")
+        st.session_state['page'] = 'Supervise Me'
+        st.success("File uploaded successfully! Redirecting to the next page...")
 
 def Supervise_me():
     if 'uploaded_file' not in st.session_state:
         st.error("Please upload a CSV file from the Welcome Page.")
+        st.session_state['page'] = 'Welcome Page'
         return
 
     uploaded_file = st.session_state['uploaded_file']
@@ -100,6 +102,7 @@ def Supervise_me():
 def Statistics_of_teachers_demo():
     if 'uploaded_file' not in st.session_state:
         st.error("Please upload a CSV file from the Welcome Page.")
+        st.session_state['page'] = 'Welcome Page'
         return
 
     uploaded_file = st.session_state['uploaded_file']
@@ -142,5 +145,8 @@ page_names_to_funcs = {
     "Statistics of Teacher": Statistics_of_teachers_demo,
 }
 
-demo_name = st.sidebar.selectbox("How can we help you?", page_names_to_funcs.keys())
-page_names_to_funcs[demo_name]()
+# Handle page navigation
+if 'page' not in st.session_state:
+    st.session_state['page'] = 'Welcome Page'
+
+page_names_to_funcs[st.session_state['page']]()
