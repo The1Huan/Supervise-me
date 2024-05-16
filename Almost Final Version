@@ -80,8 +80,10 @@ def intro(): #Here we define it
     )
 
 # Streamlit pages setup
-def supervise_me():
+def supervise_me():   
+    # Set the page title
     st.title("Supervise Me")
+    # Set up the text area for user to input the topic of their thesis. The initial value is retrieved from session state if available to save it
     user_input = st.text_area("Describe the topic of your thesis", st.session_state.get('user_input', ''))
 
     if st.button("Search"):
