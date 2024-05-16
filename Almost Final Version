@@ -10,7 +10,8 @@ data = pd.read_csv(r'/Users/fabricerebstein/Desktop/Edok.csv')
 
 # Data preparation: Combine English titles and abstracts, fallback to German if English is missing
 data['content'] = data['TitelInEnglisch'].combine_first(data['TitelInOriginalsprache']).fillna('') + \
-                  ' ' + data['KurzfassungInEnglisch'].fillna('')
+                  ' ' + data['KurzfassungInEnglisch'].fillna('') + \
+                  ' ' + data['Teacher'].fillna('')
 
 # Clean the professor names and generate emails
 def generate_email(name):
