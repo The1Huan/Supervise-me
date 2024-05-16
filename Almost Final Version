@@ -1,25 +1,46 @@
+#Here we are importing the necessary libraries for are project
+    # Streamlit for creating our app
 import streamlit as st
+    # Pandas to manipulate the data from the Edok
 import pandas as pd
+    # Regex for the pattern matching in text
 import re
+from unidecode import unidecode
+    # Here we use TfidVectorizer to do the vectorization
 from sklearn.feature_extraction.text import TfidfVectorizer
+    # Here it is to calculate the cosine similarity between the previous vectors
 from sklearn.metrics.pairwise import cosine_similarity
+    # For plotting the datas used for the graph on the page "statistics of teachers"
 import matplotlib.pyplot as plt
 
-# Load the new data
+#We load the data from the CSV file (Edok)
 data = pd.read_csv(r'/Users/fabricerebstein/Desktop/Edok.csv')
 
-# Data preparation: Combine English titles and abstracts, fallback to German if English is missing
+# This step is to prepare data by combining English and German titles and abstracts into a single content column
+# We also included the name of teachers to enable users to look directly for the name of a teacher
+    # If English title is missing, German title is used; abstracts are appended to titles
+        # Data preparation: Combine English titles and abstracts, fallback to German if English is missing
 data['content'] = data['TitelInEnglisch'].combine_first(data['TitelInOriginalsprache']).fillna('') + \
                   ' ' + data['KurzfassungInEnglisch'].fillna('') + \
                   ' ' + data['Teacher'].fillna('')
 
 # Clean the professor names and generate emails
+# It defines a function to clean up professor names and generate university email addresses
 def generate_email(name):
+    # On supprime le texte entre parenthèses et les espaces inutiles
     clean_name = re.sub(r"\(.*?\)", "", name).strip()
+    # On divise le nom en parties, en supposant que le format est nom, prénom(s)
     parts = clean_name.split(',')
+    # Si la division est réussie et contient deux parties, on formate l'email
     if len(parts) == 2:
-        last_name, first_name = parts[0].strip(), parts[1].strip()
-        email = f"{first_name.lower()}.{last_name.lower()}@unisg.ch"
+        last_name, first_names = parts[0].strip(), parts[1].strip()
+        # On retire les espaces entre les prénoms pour gérer les prénoms composés
+        first_names = first_names.replace(" ", "")
+        # On convertit les caractères accentués en caractères ASCII
+        first_names = unidecode(first_names)
+        last_name = unidecode(last_name)
+        # On convertit tout en minuscules et on crée l'adresse email
+        email = f"{first_names.lower()}.{last_name.lower()}@unisg.ch"
     else:
         email = "email_incorrect@unisg.ch"
     return email
@@ -166,5 +187,3 @@ st.sidebar.title("Navigation")
 selection = st.sidebar.radio("Go to", list(page_names_to_funcs.keys()))
 page_names_to_funcs[selection]()
    
-
-
