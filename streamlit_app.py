@@ -84,9 +84,6 @@ def Supervise_me():
                             st.write(f"Similarité : {cos_similarity[0][index]:.2f}")
                             teacher_name = data.iloc[index]['Teacher']
                             if st.button("Voir thèses de ce professeur", key=f"teacher-{index}"):
-                                st.session_state['selected_teacher'] = teacher_name
-                                st.session_state['action'] = 'show_theses'
-                                st.experimental_rerun()
                                 st.header('Subjects Graph')
                                 subject_data = data[data['Teacher'] == teacher_name]['Subjects'].value_counts().reset_index()
                                 subject_data.columns = ['Subjects', 'Count']
