@@ -1,4 +1,3 @@
-# Here we are importing the necessary libraries for our project
 import streamlit as st
 import pandas as pd
 import re
@@ -7,17 +6,13 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import matplotlib.pyplot as plt
 
-# File uploader for initial data
-uploaded_file = st.file_uploader("Upload a CSV file containing keywords", type=['csv'], key="initial_uploader")
-if uploaded_file:
+# Function to load and process data
+def load_and_process_data(uploaded_file):
     data = pd.read_csv(uploaded_file)
-
-    # Prepare data
     data['content'] = data['TitelInEnglisch'].combine_first(data['TitelInOriginalsprache']).fillna('') + \
                       ' ' + data['KurzfassungInEnglisch'].fillna('') + \
                       ' ' + data['Teacher'].fillna('')
 
-    # Function to generate email addresses
     def generate_email(name):
         clean_name = re.sub(r"\(.*?\)", "", name).strip()
         parts = clean_name.split(',')
@@ -32,10 +27,15 @@ if uploaded_file:
         return email
 
     data['email'] = data['Teacher'].apply(generate_email)
-
-    # Initialize Tfidf vectorizer
     vectorizer = TfidfVectorizer(stop_words='english')
     tfidf_matrix = vectorizer.fit_transform(data['content'])
+    return data, vectorizer, tfidf_matrix
+
+# Initial file upload and data processing
+if 'data' not in st.session_state:
+    uploaded_file = st.file_uploader("Upload a CSV file containing keywords", type=['csv'], key="initial_uploader")
+    if uploaded_file:
+        st.session_state['data'], st.session_state['vectorizer'], st.session_state['tfidf_matrix'] = load_and_process_data(uploaded_file)
 
 # Streamlit pages setup
 def intro():
@@ -62,10 +62,10 @@ def supervise_me():
     if st.button("Search", key="search_button"):
         st.session_state['user_input'] = user_input
         if user_input:
-            user_vector = vectorizer.transform([user_input])
-            cos_similarity = cosine_similarity(user_vector, tfidf_matrix)
+            user_vector = st.session_state['vectorizer'].transform([user_input])
+            cos_similarity = cosine_similarity(user_vector, st.session_state['tfidf_matrix'])
             similar_docs = cos_similarity[0].argsort()[:-11:-1]
-            st.session_state['search_results'] = [(index, cos_similarity[0][index], data.iloc[index]) for index in similar_docs]
+            st.session_state['search_results'] = [(index, cos_similarity[0][index], st.session_state['data'].iloc[index]) for index in similar_docs]
 
     if 'search_results' in st.session_state:
         st.write("Theses most similar to your description:")
@@ -82,7 +82,7 @@ def supervise_me():
 
 def show_teacher_theses(teacher):
     st.write(f"Theses supervised by {teacher}:")
-    teacher_theses = data[data['Teacher'] == teacher][['TitelInOriginalsprache', 'TitelInEnglisch', 'Area of expertise', 'Subjects', 'Name']]
+    teacher_theses = st.session_state['data'][st.session_state['data']['Teacher'] == teacher][['TitelInOriginalsprache', 'TitelInEnglisch', 'Area of expertise', 'Subjects', 'Name']]
     teacher_theses['URL'] = teacher_theses['Name'].apply(lambda name: f'<a href="https://universitaetstgallen.sharepoint.com/sites/EDOCDB/edocDocsPublished/{name}" target="_blank">Link</a>')
     teacher_theses = teacher_theses.drop(columns='Name')
     teacher_theses.columns = ['Original Title', 'Title in English', 'Area of Expertise', 'Subjects', 'URL']
@@ -90,9 +90,13 @@ def show_teacher_theses(teacher):
 
 def statistics_of_teachers():
     st.markdown("# Statistics of Teachers")
-    stats_uploaded_file = st.file_uploader("Upload a CSV file containing keywords", type=['csv'], key="stats_uploader")
-    if stats_uploaded_file:
-        df = pd.read_csv(stats_uploaded_file)
+    if 'stats_data' not in st.session_state:
+        stats_uploaded_file = st.file_uploader("Upload a CSV file containing keywords", type=['csv'], key="stats_uploader")
+        if stats_uploaded_file:
+            st.session_state['stats_data'] = pd.read_csv(stats_uploaded_file)
+
+    if 'stats_data' in st.session_state:
+        df = st.session_state['stats_data']
         subject_data = df.groupby(['Teacher', 'Subjects']).size().reset_index(name='Count')
         expertise_data = df.groupby(['Teacher', 'Area of expertise']).size().reset_index(name='Count')
         teacher_selection = st.multiselect("Choose teachers to filter:", df['Teacher'].unique(), key="teacher_selection")
