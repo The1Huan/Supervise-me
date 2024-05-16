@@ -27,8 +27,12 @@ def Supervise_me():
     from sklearn.feature_extraction.text import TfidfVectorizer
     from sklearn.metrics.pairwise import cosine_similarity
 
-    # Charger les données
-    data = pd.read_excel('/Users/fabricerebstein/Desktop/Edok.xlsx')
+  
+   # File upload
+    uploaded_file = st.file_uploader("Upload a CSV file containing keywords", type=['csv'])
+    if uploaded_file:
+        # Read the uploaded CSV file
+        data = pd.read_csv(uploaded_file)
 
     # Préparation des données: concaténer les titres et les résumés en anglais pour une comparaison complète
     data['content'] = data['TitelInEnglisch'].fillna('') + ' ' + data['KurzfassungInEnglisch'].fillna('')
