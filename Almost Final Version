@@ -87,12 +87,13 @@ def supervise_me():
     user_input = st.text_area("Describe the topic of your thesis", st.session_state.get('user_input', ''))
 
     if st.button("Search"):
+        # Save user input to session state for persistence
         st.session_state['user_input'] = user_input
-        if user_input:
-            user_vector = vectorizer.transform([user_input])
-            cos_similarity = cosine_similarity(user_vector, tfidf_matrix)
-            similar_docs = cos_similarity[0].argsort()[:-6:-1]
-            # Save the results in session state
+        if user_input: # we first check if the user has entered something
+            user_vector = vectorizer.transform([user_input]) # To vectorize the user input using the pretrained tfifd vectorizer
+            cos_similarity = cosine_similarity(user_vector, tfidf_matrix) # We compute cosine similarity between user vector and all the documents
+            similar_docs = cos_similarity[0].argsort()[:-11:-1] # from this we get indices of the top 10 similar documents
+            # Save the indices and similarity scores of similar documents
             st.session_state['search_results'] = [(index, cos_similarity[0][index], data.iloc[index]) for index in similar_docs]
 
     if 'search_results' in st.session_state:
