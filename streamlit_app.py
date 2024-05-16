@@ -6,8 +6,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 import matplotlib.pyplot as plt
 
 uploaded_file = st.file_uploader("Upload a CSV file containing keywords", type=['csv'])
-if uploaded_file:
-df = pd.read_csv(uploaded_file)
+  if uploaded_file: 
+  df = pd.read_csv(uploaded_file)
 
 # Data preparation: Combine English titles and abstracts, fallback to German if English is missing
 data['content'] = data['TitelInEnglisch'].combine_first(data['TitelInOriginalsprache']).fillna('') + \
