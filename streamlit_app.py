@@ -82,10 +82,10 @@ def Supervise_me():
                             expertise_pivot = filtered_expertise_data.pivot(index='Area of expertise', columns='Count', values='Count')
                             st.bar_chart(expertise_pivot)
 
-                            if st.button("Voir thèses de ce professeur", key=f"teacher-{index}"):
-                                st.session_state['selected_teacher'] = teacher_name
-                                st.session_state['action'] = 'show_theses'
-                                st.experimental_rerun()
+                            # Create hyperlink to the paper
+                            doc_link = f"https://universitaetstgallen.sharepoint.com/sites/EDOCDB/edocDocsPublished/{data.iloc[index]['column_name']}.pdf"
+                            st.markdown(f"[Voir la thèse complète]({doc_link})")
+
                 else:
                     st.write("Veuillez entrer une description.")
 
