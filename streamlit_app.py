@@ -83,7 +83,7 @@ def Supervise_me():
                             st.bar_chart(expertise_pivot)
 
                             # Create hyperlink to the paper
-                            doc_link = f"https://universitaetstgallen.sharepoint.com/sites/EDOCDB/edocDocsPublished/{data.iloc[index]['column_name']}.pdf"
+                            doc_link = f"https://universitaetstgallen.sharepoint.com/sites/EDOCDB/edocDocsPublished/{data.iloc[index]['name']}.pdf"
                             st.markdown(f"[Voir la thèse complète]({doc_link})")
 
                 else:
