@@ -1,45 +1,48 @@
+
 import streamlit as st
 import pandas as pd
 import re
-from unidecode import unidecode
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-import matplotlib.pyplot as plt
+from unidecode import unidecode # To normalize and clean characters to standardize them for e-mail use
+from sklearn.feature_extraction.text import TfidfVectorizer # For professor matching system, converts text
+from sklearn.metrics.pairwise import cosine_similarity # compares similarity of texts, matches to user input
+import matplotlib.pyplot as plt #API for plot graphs and visualization
 
 # Function to load and process data
 def load_and_process_data(uploaded_file):
-    data = pd.read_csv(uploaded_file)
+    data = pd.read_csv(uploaded_file) # import & read CSV file
+    # merge and format titles and their summaries
     data['content'] = data['TitelInEnglisch'].combine_first(data['TitelInOriginalsprache']).fillna('') + \
                       ' ' + data['KurzfassungInEnglisch'].fillna('') + \
                       ' ' + data['Teacher'].fillna('')
-
+    # Function that converts professor names to e-mail addresses
     def generate_email(name):
-        clean_name = re.sub(r"\(.*?\)", "", name).strip()
-        parts = clean_name.split(',')
-        if len(parts) == 2:
+        clean_name = re.sub(r"\(.*?\)", "", name).strip() # remove text in bracket, remove empty spaces
+        parts = clean_name.split(',') # Delimit strings by commas to be CSV compatible 
+        if len(parts) == 2: # Check if parts are exactly 2
             last_name, first_names = parts[0].strip(), parts[1].strip()
-            first_names = first_names.replace(" ", "")
-            first_names = unidecode(first_names)
-            last_name = unidecode(last_name)
-            email = f"{first_names.lower()}.{last_name.lower()}@unisg.ch"
+            first_names = first_names.replace(" ", "") 
+            first_names = unidecode(first_names) # Convert to ASCII
+            last_name = unidecode(last_name) # Convert to ASCII
+            email = f"{first_names.lower()}.{last_name.lower()}@unisg.ch" # Format to HSG E-mail 
         else:
-            email = "email_incorrect@unisg.ch"
+            email = "email_incorrect@unisg.ch" # If format is incorrect, provide error message
         return email
 
-    data['email'] = data['Teacher'].apply(generate_email)
-    vectorizer = TfidfVectorizer(stop_words='english')
-    tfidf_matrix = vectorizer.fit_transform(data['content'])
+    data['email'] = data['Teacher'].apply(generate_email) # Use email function on Teachers 
+    vectorizer = TfidfVectorizer(stop_words='english') # Vectorize to be matched with keywords, remove irrelevant words
+    tfidf_matrix = vectorizer.fit_transform(data['content']) # Applies previous vector to content in data
     return data, vectorizer, tfidf_matrix
 
 # Initial file upload and data processing
+# if data is already present, do not reupload
 if 'data' not in st.session_state:
-    uploaded_file = st.file_uploader("Upload a CSV file containing keywords", type=['csv'], key="initial_uploader")
+    uploaded_file = st.file_uploader("Upload a CSV file containing keywords", type=['csv'], key="initial_uploader") # Prompt user to file upload field that takes CSV form files
     if uploaded_file:
-        st.session_state['data'], st.session_state['vectorizer'], st.session_state['tfidf_matrix'] = load_and_process_data(uploaded_file)
+        st.session_state['data'], st.session_state['vectorizer'], st.session_state['tfidf_matrix'] = load_and_process_data(uploaded_file) # process data, vectorizer and matrix
 
 # Streamlit pages setup
 def intro():
-    st.write("# Welcome to SuperviseMe")
+    st.write("# Welcome to SuperviseMe") # Show title and sidebar
     st.sidebar.success("Select a function.")
     st.markdown(
         """
@@ -53,7 +56,7 @@ def intro():
 
         *GO TO NAVIGATION TO START*
         """
-    )
+    ) # Display intro text
 
 def supervise_me():
     st.title("Supervise Me")
