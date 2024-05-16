@@ -21,6 +21,9 @@ def Supervise_me():
     uploaded_file = st.file_uploader("Upload a CSV file containing keywords", type=['csv'])
     if uploaded_file:
         data = pd.read_csv(uploaded_file)
+        
+        # Use title in original language if title in English is NaN
+        data['TitelInEnglisch'] = data['TitelInEnglisch'].fillna(data['TitelInOriginalsprache'])
         data['content'] = data['TitelInEnglisch'].fillna('') + ' ' + data['KurzfassungInEnglisch'].fillna('')
         data['email'] = data['Teacher'].apply(lambda name: f"{name.split()[0].lower()}.{name.split()[-1].lower()}@unisg.ch")
 
