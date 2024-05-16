@@ -66,13 +66,15 @@ def intro(): #Here we define it
     #We set up our text description
     st.markdown(
         """
-        Supervise me is a match maker between students and supervisors for the university of St-Gallen
+          Welcome to SuperviseMe, your one-stop portal for academic research and collaboration at the university of St-Gallen! 
 
-        Welcome to Supervise Me, the innovative platform designed to seamlessly connect students with the ideal teachers for their bachelor or master thesis supervision. Our app streamlines the matching process by carefully considering each teacher's area of expertise and preferred subjects to ensure that every student receives personalized guidance tailored to their academic needs. Whether you are embarking on your final thesis project or looking for expert insights to shape your research, Supervise Me is here to facilitate these crucial academic partnerships, paving the way for successful scholarly achievements.
+    Whether you're a student looking for a thesis topic, a researcher looking for similar work or someone looking for the perfect supervisor, SuperviseMe is here for you.
 
-        *GO TO NAVIGATION TO START*
-        
+    Here, you can explore a vast database of the best theses from the university of St-Gallen to discover research that precisely matches your academic interests. Using our unique comparison feature, you can also identify and analyze similarities between different theses to enrich your own work.
 
+    But that's not all: SuperviseMe also helps you find the ideal supervisor. Access detailed profiles of professors, including previous publications, specialties and even direct contact details, such as email address. You can compare several professors to see who best matches your academic and personal expectations.
+
+    *GO TO NAVIGATION TO START*
        
     """
     )
