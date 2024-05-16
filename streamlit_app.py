@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 uploaded_file = st.file_uploader("Upload a CSV file containing keywords", type=['csv'], key="file_uploader_main")
 if uploaded_file:
     data = pd.read_csv(uploaded_file)
+    df = pd.read_csv(uploaded_file)
 
     # This step is to prepare data by combining English and German titles and abstracts into a single content column
     # We also included the name of teachers to enable users to look directly for the name of a teacher
@@ -128,9 +129,6 @@ if uploaded_file:
     def statistics_of_teachers():
         st.markdown("# Statistics of Teachers")
         
-        if uploaded_file:
-            df = pd.read_csv(uploaded_file)
-
             # Group by 'Teacher' and 'Subjects' and count occurrences
             subject_data = df.groupby(['Teacher', 'Subjects']).size().reset_index(name='Count')
             # Group by 'Teacher' and 'Area of Expertise' and count occurrences
