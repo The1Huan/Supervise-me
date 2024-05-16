@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from urllib.parse import urlencode
 
 st.set_page_config(page_title="Supervise Me", page_icon=':bar_chart')
 
@@ -31,26 +30,19 @@ def Supervise_me():
 
         user_input = st.text_area("Décrivez le sujet de votre thèse", "Tapez votre texte ici...")
 
-        def show_teacher_theses(teacher):
-            st.write(f"Thèses supervisées par {teacher}:")
-            teacher_theses = data[data['Teacher'] == teacher]
+        if 'action' not in st.session_state:
+            st.session_state['action'] = 'search'
+        
+        if st.session_state['action'] == 'show_theses' and 'selected_teacher' in st.session_state:
+            selected_teacher = st.session_state['selected_teacher']
+            st.write(f"Thèses supervisées par {selected_teacher}:")
+            teacher_theses = data[data['Teacher'] == selected_teacher]
             for _, row in teacher_theses.iterrows():
                 st.write(f"Titre: {row['TitelInEnglisch']}")
                 st.write("---")
             if st.button("Retour"):
                 st.session_state['action'] = 'search'
-                st.experimental_set_query_params()
-
-        if 'action' not in st.session_state:
-            st.session_state['action'] = 'search'
-
-        params = st.experimental_get_query_params()
-        if 'teacher' in params:
-            st.session_state['selected_teacher'] = params['teacher'][0]
-            st.session_state['action'] = 'show_theses'
-
-        if st.session_state['action'] == 'show_theses' and 'selected_teacher' in st.session_state:
-            show_teacher_theses(st.session_state['selected_teacher'])
+                st.experimental_rerun()
         else:
             if st.button("Rechercher"):
                 if user_input != "Tapez votre texte ici...":
@@ -68,8 +60,7 @@ def Supervise_me():
                             if st.button("Voir thèses de ce professeur", key=f"teacher-{index}"):
                                 st.session_state['selected_teacher'] = teacher_name
                                 st.session_state['action'] = 'show_theses'
-                                params = urlencode({"teacher": teacher_name})
-                                st.experimental_set_query_params(**params)
+                                st.experimental_rerun()
                 else:
                     st.write("Veuillez entrer une description.")
 
