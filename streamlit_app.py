@@ -3,13 +3,14 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
+# Set page configuration
 st.set_page_config(page_title="Supervise Me", page_icon=':bar_chart')
 
 def intro():
     st.write("# Welcome to SuperviseMe")
     st.sidebar.success("Select a function.")
     st.markdown("""
-        Supervise me is a match maker between students and supervisors for the university of St-Gallen
+        Supervise me is a match maker between students and supervisors for the University of St-Gallen.
 
         Welcome to Supervise Me, the innovative platform designed to seamlessly connect students with the ideal teachers for their bachelor or master thesis supervision. Our app streamlines the matching process by carefully considering each teacher's area of expertise and preferred subjects to ensure that every student receives personalized guidance tailored to their academic needs. Whether you are embarking on your final thesis project or looking for expert insights to shape your research, Supervise Me is here to facilitate these crucial academic partnerships, paving the way for successful scholarly achievements.
 
@@ -36,13 +37,18 @@ def Supervise_me():
         if st.session_state['action'] == 'show_theses' and 'selected_teacher' in st.session_state:
             selected_teacher = st.session_state['selected_teacher']
             st.write(f"Thèses supervisées par {selected_teacher}:")
+
             teacher_theses = data[data['Teacher'] == selected_teacher]
             for _, row in teacher_theses.iterrows():
                 st.write(f"Titre: {row['TitelInEnglisch']}")
                 st.write("---")
+            
             if st.button("Retour"):
                 st.session_state['action'] = 'search'
                 st.experimental_rerun()
+            
+            # Display statistics for the selected teacher
+            display_teacher_statistics(data, selected_teacher)
         else:
             if st.button("Rechercher"):
                 if user_input != "Tapez votre texte ici...":
@@ -63,6 +69,25 @@ def Supervise_me():
                                 st.experimental_rerun()
                 else:
                     st.write("Veuillez entrer une description.")
+
+def display_teacher_statistics(data, teacher_name):
+    subject_data = data.groupby(['Teacher', 'Subjects']).size().reset_index(name='Count')
+    expertise_data = data.groupby(['Teacher', 'Area of expertise']).size().reset_index(name='Count')
+    st.subheader(f"Details for {teacher_name}")
+    
+    filtered_subject_data = subject_data[subject_data['Teacher'] == teacher_name]
+    st.write(filtered_subject_data)
+    
+    filtered_expertise_data = expertise_data[expertise_data['Teacher'] == teacher_name]
+    st.write(filtered_expertise_data)
+    
+    st.header('Subjects Graph')
+    subject_pivot = filtered_subject_data.pivot(index='Subjects', columns='Count', values='Count')
+    st.bar_chart(subject_pivot)
+    
+    st.header('Area of expertise Graph')
+    expertise_pivot = filtered_expertise_data.pivot(index='Area of expertise', columns='Count', values='Count')
+    st.bar_chart(expertise_pivot)
 
 def Statistics_of_teachers_demo():
     st.markdown(f"# {list(page_names_to_funcs.keys())[2]}")
