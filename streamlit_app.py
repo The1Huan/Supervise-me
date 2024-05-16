@@ -128,6 +128,7 @@ if uploaded_file:
     def statistics_of_teachers():
         st.markdown("# Statistics of Teachers")
         
+        if uploaded_file:
             df = pd.read_csv(uploaded_file)
 
             # Group by 'Teacher' and 'Subjects' and count occurrences
