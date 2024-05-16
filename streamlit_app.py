@@ -44,35 +44,39 @@ def Supervise_me():
                 st.session_state['action'] = 'search'
                 st.experimental_rerun()
         else:
-            if st.button("Rechercher"):
-                if user_input != "Tapez votre texte ici...":
-                    user_vector = vectorizer.transform([user_input])
-                    cos_similarity = cosine_similarity(user_vector, tfidf_matrix)
-                    similar_docs = cos_similarity[0].argsort()[:-6:-1]
+    if st.button("Rechercher"):
+        if user_input != "Tapez votre texte ici...":
+            user_vector = vectorizer.transform([user_input])
+            cos_similarity = cosine_similarity(user_vector, tfidf_matrix)
+            similar_docs = cos_similarity[0].argsort()[:-6:-1]
 
-                    st.write("Thèses les plus similaires à votre description :")
-                    for index in similar_docs:
-                        with st.expander(f"{data.iloc[index]['TitelInEnglisch']}"):
-                            st.write(f"Professeur : {data.iloc[index]['Teacher']}")
-                            st.write(f"Email : {data.iloc[index]['email']}")
-                            st.write(f"Similarité : {cos_similarity[0][index]:.2f}")
-                            teacher_name = data.iloc[index]['Teacher']
-                            if st.expander("Voir thèses de ce professeur", key=f"teacher-{index}"):
-                                subject_data = df.groupby(['Teacher', 'Subjects']).size().reset_index(name='Count')
-        expertise_data = df.groupby(['Teacher', 'Area of expertise']).size().reset_index(name='Count')
-                else:
-                    st.write("Veuillez entrer une description.")
-                     st.subheader(f"Details for {teacher_selection}")
-        filtered_subject_data = subject_data[subject_data['Teacher'] == teacher_selection]
-        st.write(filtered_subject_data)
-        filtered_expertise_data = expertise_data[expertise_data['Teacher'] == teacher_selection]
-        st.write(filtered_expertise_data)
-        st.header('Subjects Graph')
-        subject_pivot = filtered_subject_data.pivot(index='Subjects', columns='Count', values='Count')
-        st.bar_chart(subject_pivot)
-        st.header('Area of expertise Graph')
-        expertise_pivot = filtered_expertise_data.pivot(index='Area of expertise', columns='Count', values='Count')
-        st.bar_chart(expertise_pivot)
+            st.write("Thèses les plus similaires à votre description :")
+            for index in similar_docs:
+                with st.expander(f"{data.iloc[index]['TitelInEnglisch']}"):
+                    st.write(f"Professeur : {data.iloc[index]['Teacher']}")
+                    st.write(f"Email : {data.iloc[index]['email']}")
+                    st.write(f"Similarité : {cos_similarity[0][index]:.2f}")
+                    teacher_name = data.iloc[index]['Teacher']
+                    if st.expander("Voir thèses de ce professeur", key=f"teacher-{index}"):
+                        subject_data = df.groupby(['Teacher', 'Subjects']).size().reset_index(name='Count')
+                        expertise_data = df.groupby(['Teacher', 'Area of expertise']).size().reset_index(name='Count')
+                        
+                        st.subheader(f"Details for {teacher_name}")
+                        filtered_subject_data = subject_data[subject_data['Teacher'] == teacher_name]
+                        st.write(filtered_subject_data)
+                        filtered_expertise_data = expertise_data[expertise_data['Teacher'] == teacher_name]
+                        st.write(filtered_expertise_data)
+                        
+                        st.header('Subjects Graph')
+                        subject_pivot = filtered_subject_data.pivot(index='Subjects', columns='Count', values='Count')
+                        st.bar_chart(subject_pivot)
+                        
+                        st.header('Area of expertise Graph')
+                        expertise_pivot = filtered_expertise_data.pivot(index='Area of expertise', columns='Count', values='Count')
+                        st.bar_chart(expertise_pivot)
+        else:
+            st.write("Veuillez entrer une description.")
+
 
 def Statistics_of_teachers_demo():
     st.markdown(f"# {list(page_names_to_funcs.keys())[2]}")
