@@ -50,11 +50,11 @@ def intro():
 
         Whether you're a student looking for a thesis topic, a researcher looking for similar work or someone looking for the perfect supervisor, SuperviseMe is here for you.
 
-        Here, you can explore a vast database of the best theses from the university of St-Gallen to discover research that precisely matches your academic interests. Using our unique comparison feature, you can also identify and analyze similarities between different theses to enrich your own work.
+        First, upload the EDOK.csv file to populate our database from the university of St-Gallen and discover research that precisely matches your academic interests. Using our unique comparison feature, you can also identify and analyze similarities between different theses to enrich your own work.
 
         But that's not all: SuperviseMe also helps you find the ideal supervisor. Access detailed profiles of professors, including previous publications, specialties and even direct contact details, such as email address. You can compare several professors to see who best matches your academic and personal expectations.
 
-        *GO TO NAVIGATION TO START*
+        *After uploading the CSV file GO TO NAVIGATION TO START*
         """
     ) # Display intro text
 
@@ -110,10 +110,11 @@ def statistics_of_teachers():
                 st.write("Subjects Data:")
                 st.write(filtered_subject_data)
                 fig, ax = plt.subplots()
+                #Visuals implementation bar chart subjects
                 for teacher in teacher_selection:
                     ax.bar(filtered_subject_data[filtered_subject_data['Teacher'] == teacher]['Subjects'],
                            filtered_subject_data[filtered_subject_data['Teacher'] == teacher]['Count'], label=teacher)
-               #Visuals implementation bar chart subjects
+              
                 ax.set_title('Comparison of Subjects by Teacher') #title
                 ax.set_xlabel('Subjects') #x-axis
                 ax.set_ylabel('Count') #y-axis
