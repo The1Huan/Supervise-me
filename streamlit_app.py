@@ -57,7 +57,7 @@ def Supervise_me():
                             st.write(f"Email : {data.iloc[index]['email']}")
                             st.write(f"Similarité : {cos_similarity[0][index]:.2f}")
                             teacher_name = data.iloc[index]['Teacher']
-                            if st.expander("Voir thèses de ce professeur", key=f"teacher-{index}"):
+                            with st.expander("Voir thèses de ce professeur", key=f"teacher-{index}"):
                                 subject_data = data.groupby(['Teacher', 'Subjects']).size().reset_index(name='Count')
                                 expertise_data = data.groupby(['Teacher', 'Area of expertise']).size().reset_index(name='Count')
                                 
