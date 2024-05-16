@@ -5,6 +5,7 @@ import streamlit as st
 import pandas as pd
     # Regex for the pattern matching in text
 import re
+    # Unicode to transform special caracters into normal letters
 from unidecode import unidecode
     # Here we use TfidVectorizer to do the vectorization
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -27,37 +28,42 @@ data['content'] = data['TitelInEnglisch'].combine_first(data['TitelInOriginalspr
 # Clean the professor names and generate emails
 # It defines a function to clean up professor names and generate university email addresses
 def generate_email(name):
-    # On supprime le texte entre parenthèses et les espaces inutiles
+    # We delete useless caracters
     clean_name = re.sub(r"\(.*?\)", "", name).strip()
-    # On divise le nom en parties, en supposant que le format est nom, prénom(s)
+    # We split the name into parts assuming format is last name, first names
     parts = clean_name.split(',')
-    # Si la division est réussie et contient deux parties, on formate l'email
+    # If the split is successful and contains two parts, it formats the email
     if len(parts) == 2:
         last_name, first_names = parts[0].strip(), parts[1].strip()
-        # On retire les espaces entre les prénoms pour gérer les prénoms composés
+        # We remove spaces for double first names
         first_names = first_names.replace(" ", "")
-        # On convertit les caractères accentués en caractères ASCII
+        # We remove any accent from the names
         first_names = unidecode(first_names)
         last_name = unidecode(last_name)
-        # On convertit tout en minuscules et on crée l'adresse email
+        # We remove any capital letter and create the email address on a standard basis
         email = f"{first_names.lower()}.{last_name.lower()}@unisg.ch"
     else:
         email = "email_incorrect@unisg.ch"
     return email
 
+# It applies the generate_email function to each row in the Teacher column to create email addresses
 data['email'] = data['Teacher'].apply(generate_email)
 
-# Initialize the TF-IDF vectorizer
+# We initialize the Tfidf vectorizer, excluding english stop words
 vectorizer = TfidfVectorizer(stop_words='english')
+# Transform the content into a matrix of Tfidf features
 tfidf_matrix = vectorizer.fit_transform(data['content'])
 
-# Streamlit pages setup
-def intro():
-    import streamlit as st
+# Streamlit pages setup: we simply create our welcome page on the app
+def intro(): #Here we define it
+    import streamlit as st #We reimport streamlit to make it work on the page
 
+    # We set up a title
     st.write("# Welcome to SuperviseMe")
+    # We add a side bar to navigate between different pages 
     st.sidebar.success("Select a function.")
 
+    #We set up our text description
     st.markdown(
         """
         Supervise me is a match maker between students and supervisors for the university of St-Gallen
@@ -186,4 +192,6 @@ page_names_to_funcs = {
 st.sidebar.title("Navigation")
 selection = st.sidebar.radio("Go to", list(page_names_to_funcs.keys()))
 page_names_to_funcs[selection]()
+   
+
    
