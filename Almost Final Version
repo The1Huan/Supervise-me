@@ -96,42 +96,40 @@ def supervise_me():
             # Save the indices and similarity scores of similar documents
             st.session_state['search_results'] = [(index, cos_similarity[0][index], data.iloc[index]) for index in similar_docs]
 
+    # Here we need to check if there are any search results
     if 'search_results' in st.session_state:
-        st.write("Theses most similar to your description:")
+        st.write("Theses most similar to your description:")  # Header for display
         for index, similarity, doc in st.session_state['search_results']:
-            with st.expander(f"Professor : {doc['Teacher']}"):
+            with st.expander(f"Professor : {doc['Teacher']}"): # we an expander for each thesis showing professor's name
+                #We use a function to use english title if available, otherwise the original title
                 title = doc['TitelInEnglisch'] if pd.notna(doc['TitelInEnglisch']) else doc['TitelInOriginalsprache']
-                st.write(f"Title: {title}")
-                st.write(f"PDF: https://universitaetstgallen.sharepoint.com/sites/EDOCDB/edocDocsPublished/{doc['Name']}")
-                st.write(f"Professor: {doc['Teacher']}")
-                st.write(f"Email: {doc['email']}")
-                st.write(f"Similarity: {similarity:.2f}")
+                st.write(f"Title: {title}") # Display the title of the thesis
+                st.write(f"PDF: https://universitaetstgallen.sharepoint.com/sites/EDOCDB/edocDocsPublished/{doc['Name']}") # Provide a direct access to the thesis
+                st.write(f"Professor: {doc['Teacher']}") # Display professor's name
+                st.write(f"Email: {doc['email']}") # Show professor's email by using our previous function
+                st.write(f"Similarity: {similarity:.2f}") # Function to show the similarity score rounded to two decimal places
+                # we create a button to see more theses supervised by the same professor, using a unique key to avoid conflicts
                 if st.button("See theses by this professor", key=f"teacher-{index}"):
-                    show_teacher_theses(doc['Teacher'])
+                    show_teacher_theses(doc['Teacher']) # It is just a call function to display all theses by this professor
 
+# Here we define the section to show all teacher theses
 def show_teacher_theses(teacher):
-    st.write(f"Theses supervised by {teacher}:")
+    st.write(f"Theses supervised by {teacher}:") # Header for theses supervised by a specific professor
+    # We filter data to find theses, applying an order with columns
     teacher_theses = data[data['Teacher'] == teacher][['TitelInOriginalsprache', 'TitelInEnglisch', 'Area of expertise', 'Subjects', 'Name']]
+    # We create a direct link by using the standard first part of the data base from the university and addind the specific name of the thesis
     teacher_theses['URL'] = teacher_theses['Name'].apply(lambda name: f'<a href="https://universitaetstgallen.sharepoint.com/sites/EDOCDB/edocDocsPublished/{name}" target="_blank">Link</a>')
-    teacher_theses = teacher_theses.drop(columns='Name')  # Optional: Drop the 'Name' column if it's no longer needed in the display
-    teacher_theses.columns = ['Original Title', 'Title in English', 'Area of Expertise', 'Subjects', 'URL']
+    teacher_theses = teacher_theses.drop(columns='Name')  # Optional: Drop the 'Name' column
+    teacher_theses.columns = ['Original Title', 'Title in English', 'Area of Expertise', 'Subjects', 'URL'] # We rename the columns to fit our expectations
     
-    # Convert the DataFrame to HTML and then use Streamlit's HTML function to render it
+    # We convert the document into direct link HTLM
     st.write(teacher_theses.to_html(escape=False, index=False), unsafe_allow_html=True)
 
-
-# Assuming this is part of a larger Streamlit app, ensure the function is called correctly
-# in the main app flow, like:
-# if page == "Supervise Me":
-#     supervise_me()
-
-# Setting up page navigation using sidebar selection
-
+# The following steps are to set up page navigation using a sidebar selection
 # Function to manage the 'Statistics of Teachers' page
-def statistics_of_teachers():
-    st.markdown("# Statistics of Teachers")
+def statistics_of_teachers(): #We define the page 
+    st.markdown("# Statistics of Teachers") # We define the name of the page
 
-    # Load data
     df = pd.read_csv(r"/Users/fabricerebstein/Desktop/Edok.csv")
    
     # Group by 'Teacher' and 'Subjects' and count occurrences
