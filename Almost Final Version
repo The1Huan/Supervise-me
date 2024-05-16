@@ -69,6 +69,7 @@ def supervise_me():
             with st.expander(f"Professor : {doc['Teacher']}"):
                 title = doc['TitelInEnglisch'] if pd.notna(doc['TitelInEnglisch']) else doc['TitelInOriginalsprache']
                 st.write(f"Title: {title}")
+                st.write(f"PDF: https://universitaetstgallen.sharepoint.com/sites/EDOCDB/edocDocsPublished/{doc['Name']}")
                 st.write(f"Professor: {doc['Teacher']}")
                 st.write(f"Email: {doc['email']}")
                 st.write(f"Similarity: {similarity:.2f}")
@@ -77,9 +78,14 @@ def supervise_me():
 
 def show_teacher_theses(teacher):
     st.write(f"Theses supervised by {teacher}:")
-    teacher_theses = data[data['Teacher'] == teacher][['TitelInOriginalsprache','TitelInEnglisch', 'Area of expertise', 'Subjects']]
-    teacher_theses.columns = ['Original Title', 'Title in English', 'Area of Expertise', 'Subjects']
-    st.dataframe(teacher_theses)  # Displaying the dataframe as a table
+    teacher_theses = data[data['Teacher'] == teacher][['TitelInOriginalsprache', 'TitelInEnglisch', 'Area of expertise', 'Subjects', 'Name']]
+    teacher_theses['URL'] = teacher_theses['Name'].apply(lambda name: f'<a href="https://universitaetstgallen.sharepoint.com/sites/EDOCDB/edocDocsPublished/{name}" target="_blank">Link</a>')
+    teacher_theses = teacher_theses.drop(columns='Name')  # Optional: Drop the 'Name' column if it's no longer needed in the display
+    teacher_theses.columns = ['Original Title', 'Title in English', 'Area of Expertise', 'Subjects', 'URL']
+    
+    # Convert the DataFrame to HTML and then use Streamlit's HTML function to render it
+    st.write(teacher_theses.to_html(escape=False, index=False), unsafe_allow_html=True)
+
 
 # Assuming this is part of a larger Streamlit app, ensure the function is called correctly
 # in the main app flow, like:
@@ -155,3 +161,4 @@ st.sidebar.title("Navigation")
 selection = st.sidebar.radio("Go to", list(page_names_to_funcs.keys()))
 page_names_to_funcs[selection]()
    
+
