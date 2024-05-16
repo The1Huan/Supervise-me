@@ -61,47 +61,51 @@ def intro():
 def supervise_me():
     st.title("Supervise Me")
     user_input = st.text_area("Describe the topic of your thesis", st.session_state.get('user_input', ''), key="thesis_input")
-
+#search button magic
     if st.button("Search", key="search_button"):
         st.session_state['user_input'] = user_input
         if user_input:
-            user_vector = st.session_state['vectorizer'].transform([user_input])
-            cos_similarity = cosine_similarity(user_vector, st.session_state['tfidf_matrix'])
-            similar_docs = cos_similarity[0].argsort()[:-11:-1]
-            st.session_state['search_results'] = [(index, cos_similarity[0][index], st.session_state['data'].iloc[index]) for index in similar_docs]
+            user_vector = st.session_state['vectorizer'].transform([user_input]) #vectorize input
+            cos_similarity = cosine_similarity(user_vector, st.session_state['tfidf_matrix']) # match imput
+            similar_docs = cos_similarity[0].argsort()[:-11:-1] # Sort top 10 
+            st.session_state['search_results'] = [(index, cos_similarity[0][index], st.session_state['data'].iloc[index]) for index in similar_docs] #display the papers that match
+
 
     if 'search_results' in st.session_state:
         st.write("Theses most similar to your description:")
         for index, similarity, doc in st.session_state['search_results']:
             with st.expander(f"Professor: {doc['Teacher']}"):
-                title = doc['TitelInEnglisch'] if pd.notna(doc['TitelInEnglisch']) else doc['TitelInOriginalsprache']
+                title = doc['TitelInEnglisch'] if pd.notna(doc['TitelInEnglisch']) else doc['TitelInOriginalsprache'] #use english title if available otherwise og language
                 st.write(f"Title: {title}")
-                st.write(f"PDF: https://universitaetstgallen.sharepoint.com/sites/EDOCDB/edocDocsPublished/{doc['Name']}")
-                st.write(f"Professor: {doc['Teacher']}")
-                st.write(f"Email: {doc['email']}")
-                st.write(f"Similarity: {similarity:.2f}")
+                st.write(f"PDF: https://universitaetstgallen.sharepoint.com/sites/EDOCDB/edocDocsPublished/{doc['Name']}") #make link to papers
+                st.write(f"Professor: {doc['Teacher']}") #display prof name
+                st.write(f"Email: {doc['email']}") #display email
+                st.write(f"Similarity: {similarity:.2f}") # overlap in decimal
+                #The most annoying button in the world because it did not want to work until 5 min ago! and now its a lovely little thing that does it's job perfectly. DO NOT MESS WITH FABRICE & RAFFI AND THEIR WIZARD SKILLS AND MAGIC BUTTON!!!!
                 if st.button("See theses by this professor", key=f"teacher-{index}"):
                     show_teacher_theses(doc['Teacher'])
+#this part makes the button work and display all the papers they supervised and got published
 
 def show_teacher_theses(teacher):
     st.write(f"Theses supervised by {teacher}:")
-    teacher_theses = st.session_state['data'][st.session_state['data']['Teacher'] == teacher][['TitelInOriginalsprache', 'TitelInEnglisch', 'Area of expertise', 'Subjects', 'Name']]
-    teacher_theses['URL'] = teacher_theses['Name'].apply(lambda name: f'<a href="https://universitaetstgallen.sharepoint.com/sites/EDOCDB/edocDocsPublished/{name}" target="_blank">Link</a>')
-    teacher_theses = teacher_theses.drop(columns='Name')
-    teacher_theses.columns = ['Original Title', 'Title in English', 'Area of Expertise', 'Subjects', 'URL']
-    st.write(teacher_theses.to_html(escape=False, index=False), unsafe_allow_html=True)
+    teacher_theses = st.session_state['data'][st.session_state['data']['Teacher'] == teacher][['TitelInOriginalsprache', 'TitelInEnglisch', 'Area of expertise', 'Subjects', 'Name']] #filter by teacher
+    teacher_theses['URL'] = teacher_theses['Name'].apply(lambda name: f'<a href="https://universitaetstgallen.sharepoint.com/sites/EDOCDB/edocDocsPublished/{name}" target="_blank">Link</a>') # link to paper 
+    teacher_theses = teacher_theses.drop(columns='Name') #drops name column
+    teacher_theses.columns = ['Original Title', 'Title in English', 'Area of Expertise', 'Subjects', 'URL'] #name columns the way we want 
+    st.write(teacher_theses.to_html(escape=False, index=False), unsafe_allow_html=True) # display table and clickable links
 
+#new draw up comparisons between Teachers core interests and field of expertiese. Use of visualisations.
 def statistics_of_teachers():
     st.markdown("# Statistics of Teachers")
     if 'data' in st.session_state:
         df = st.session_state['data']
-        subject_data = df.groupby(['Teacher', 'Subjects']).size().reset_index(name='Count')
-        expertise_data = df.groupby(['Teacher', 'Area of expertise']).size().reset_index(name='Count')
-        teacher_selection = st.multiselect("Choose teachers to filter:", df['Teacher'].unique(), key="teacher_selection")
+        subject_data = df.groupby(['Teacher', 'Subjects']).size().reset_index(name='Count') # gorup data for table 1
+        expertise_data = df.groupby(['Teacher', 'Area of expertise']).size().reset_index(name='Count') #group data for Table 2
+        teacher_selection = st.multiselect("Choose teachers to filter:", df['Teacher'].unique(), key="teacher_selection") #Dropdown selection tool
         if teacher_selection:
             st.subheader("Details for Selected Teachers")
-            filtered_subject_data = subject_data[subject_data['Teacher'].isin(teacher_selection)]
-            filtered_expertise_data = expertise_data[expertise_data['Teacher'].isin(teacher_selection)]
+            filtered_subject_data = subject_data[subject_data['Teacher'].isin(teacher_selection)] #filter by subject data and prof
+            filtered_expertise_data = expertise_data[expertise_data['Teacher'].isin(teacher_selection)] #filter by expertise and prof
             if not filtered_subject_data.empty:
                 st.write("Subjects Data:")
                 st.write(filtered_subject_data)
@@ -109,32 +113,36 @@ def statistics_of_teachers():
                 for teacher in teacher_selection:
                     ax.bar(filtered_subject_data[filtered_subject_data['Teacher'] == teacher]['Subjects'],
                            filtered_subject_data[filtered_subject_data['Teacher'] == teacher]['Count'], label=teacher)
-                ax.set_title('Comparison of Subjects by Teacher')
-                ax.set_xlabel('Subjects')
-                ax.set_ylabel('Count')
-                ax.legend(title="Teachers")
-                ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
-                st.pyplot(fig)
+               #Visuals implementation bar chart subjects
+                ax.set_title('Comparison of Subjects by Teacher') #title
+                ax.set_xlabel('Subjects') #x-axis
+                ax.set_ylabel('Count') #y-axis
+                ax.legend(title="Teachers") #legend
+                ax.set_xticklabels(ax.get_xticklabels(), rotation=90) #make look pretty and rotate
+                st.pyplot(fig) #display
             if not filtered_expertise_data.empty:
                 st.write("Area of Expertise Data:")
                 st.write(filtered_expertise_data)
+                #same as before but now for expertise
                 fig, ax = plt.subplots()
                 for teacher in teacher_selection:
                     ax.bar(filtered_expertise_data[filtered_expertise_data['Teacher'] == teacher]['Area of expertise'],
                            filtered_expertise_data[filtered_expertise_data['Teacher'] == teacher]['Count'], label=teacher)
-                ax.set_title('Comparison of Area of Expertise by Teacher')
-                ax.set_xlabel('Area of Expertise')
-                ax.set_ylabel('Count')
-                ax.legend(title="Teachers")
-                ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
-                st.pyplot(fig)
+                ax.set_title('Comparison of Area of Expertise by Teacher') #title
+                ax.set_xlabel('Area of Expertise') # x-axis
+                ax.set_ylabel('Count') # y-axis
+                ax.legend(title="Teachers") #legend
+                ax.set_xticklabels(ax.get_xticklabels(), rotation=90) #make look pretty and rotate
+                st.pyplot(fig) #show the barchart
 
+#makes sidebar work
 page_names_to_funcs = {
     "Welcome Page": intro,
     "Supervise Me": supervise_me,
     "Statistics of Teachers": statistics_of_teachers,
 }
 
+#makes sidebar navigation work
 st.sidebar.title("Navigation")
-selection = st.sidebar.radio("Go to", list(page_names_to_funcs.keys()))
-page_names_to_funcs[selection]()
+selection = st.sidebar.radio("Go to", list(page_names_to_funcs.keys())) #we can CLICK!!!!
+page_names_to_funcs[selection]() #match page to function
